@@ -1,11 +1,10 @@
 package org.example.stackoverflowsd.controller;
 
-import jakarta.servlet.annotation.MultipartConfig;
 import org.example.stackoverflowsd.model.AuthRequest;
 import org.example.stackoverflowsd.model.Question;
 import org.example.stackoverflowsd.model.User;
 import org.example.stackoverflowsd.service.JwtService;
-import org.example.stackoverflowsd.service.UserInfoService;
+import org.example.stackoverflowsd.service.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,12 +14,16 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/user")
 public class UserController {
 
     @Autowired
-    private UserInfoService userService;
+    private UserServiceImpl userService;
 
     @Autowired
     private JwtService jwtService;
@@ -100,6 +103,48 @@ public class UserController {
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/getQuestionsOfUser")
+    public ResponseEntity<?> getQuestionsOfUser(@RequestHeader("Authorization") String token, @RequestParam String username) {
+        if(checkIfUserMatchesToken(token, username) == 1) {
+                return ResponseEntity.ok().body(userService.getQuestionsOfUser(username));
+        }
+        else {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
+    @PostMapping("/deleteQuestion")
+    public ResponseEntity<String> deleteQuestion(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam Long questionID) {
+        if(checkIfUserMatchesToken(token, username) == 1) {
+            if(userService.deleteQuestion(username, questionID) == 1) {
+                return ResponseEntity.ok("Question deleted successfully");
+            }
+            else {
+                return ResponseEntity.badRequest().build();
+            }
+        }
+        else {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
+    @PostMapping("/updateQuestion")
+    public ResponseEntity<String> updateQuestion(@RequestHeader("Authorization") String token, @RequestParam String author, @RequestParam int id, @RequestParam(required = false) String title, @RequestParam(required = false) String text,
+                                                 @RequestParam(required = false) String tags, @RequestParam(required = false) MultipartFile image) throws IOException {
+        if(checkIfUserMatchesToken(token, author) == 1) {
+
+            if(userService.updateQuestion(author, id, title, text, tags, image) == 1) {
+                return ResponseEntity.ok("Question updated successfully");
+            }
+            else {
+                return ResponseEntity.badRequest().build();
+            }
+        }
+        else {
+            return ResponseEntity.status(401).build();
         }
     }
 

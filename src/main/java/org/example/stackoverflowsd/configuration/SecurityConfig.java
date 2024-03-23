@@ -1,6 +1,6 @@
 package org.example.stackoverflowsd.configuration;
 
-import org.example.stackoverflowsd.service.UserInfoService;
+import org.example.stackoverflowsd.service.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +28,7 @@ public class SecurityConfig {
     // User Creation
     @Bean
     public UserDetailsService userDetailsService() {
-        return new UserInfoService();
+        return new UserServiceImpl();
     }
 
     // Configuring HttpSecurity

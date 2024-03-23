@@ -100,4 +100,14 @@ public class Question {
         this.tags = tags;
     }
 
+    public Question(Long id, String author, String title, String text, LocalDateTime creationTime, String picturePath, String tags) {
+        this.id = id;
+        this.author = author;
+        this.title = title;
+        this.text = text;
+        this.creationTime = creationTime;
+        this.picturePath = picturePath;
+        this.tags = tags;
+    }
+
 }

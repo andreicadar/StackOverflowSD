@@ -13,10 +13,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @Service
-public class UserInfoService implements UserDetailsService {
+public class UserServiceImpl implements UserDetailsService {
 
     @Autowired
     private UserRepository userRepository;
@@ -58,5 +60,17 @@ public class UserInfoService implements UserDetailsService {
 
     }
 
+    public List<Question> getQuestionsOfUser(String username) {
+        return questionRepository.getQuestionsOfUser(username);
+    }
+
+
+    public int deleteQuestion(String username, Long questionID) {
+        return questionRepository.deleteQuestion(username, questionID);
+    }
+
+    public int updateQuestion(String author, int id, String title, String text, String tags, MultipartFile image) throws IOException {
+        return questionRepository.updateQuestion(author, id, title, text, tags, image);
+    }
 
 }

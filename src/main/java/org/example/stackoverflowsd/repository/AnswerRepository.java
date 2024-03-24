@@ -218,6 +218,23 @@ public class AnswerRepository implements  AnswerInterface{
             }
             final String updateSql2 = "UPDATE answer SET score = score + ? WHERE id = ?";
             jdbcTemplate.update(updateSql2, 2 * upvote, answerID);
+
+            float scoreToAddToUser = 0;
+            float scoreToAddToAuthor = 0;
+
+            if(upvote == 1){
+                scoreToAddToAuthor = 7.5f;
+                scoreToAddToUser = 3.0f;
+            }
+            else {
+                scoreToAddToAuthor = -7.5f;
+                scoreToAddToUser = -3.0f;
+            }
+            final String updateAuthorScoreSql = "UPDATE user SET score = score + ? WHERE id = ?";
+            jdbcTemplate.update(updateAuthorScoreSql, scoreToAddToAuthor, userID);
+
+            final String updateUserScoreSql = "UPDATE user SET score = score + ? WHERE username = ?";
+            jdbcTemplate.update(updateUserScoreSql, scoreToAddToUser, username);
         }
         else {
             final String insertSql = "INSERT INTO user_answer_vote (answerID, userID, upvote) VALUES (?,?,?)";
@@ -225,6 +242,26 @@ public class AnswerRepository implements  AnswerInterface{
 
             final String updateSql = "UPDATE answer SET score = score + ? WHERE id = ?";
             jdbcTemplate.update(updateSql, upvote, answerID);
+
+            float scoreToAddToUser = 0;
+            float scoreToAddToAuthor = 0;
+
+            if(upvote == 1){
+                scoreToAddToAuthor = 5.0f;
+            }
+            else {
+                scoreToAddToAuthor = -2.5f;
+                scoreToAddToUser = -1.5f;
+
+                System.out.println("Am intrat in if-ul de jos");
+
+                final String updateUserScoreSql = "UPDATE user SET score = score + ? WHERE username = ?";
+                jdbcTemplate.update(updateUserScoreSql, scoreToAddToUser, username);
+            }
+            final String updateAuthorScoreSql = "UPDATE user SET score = score + ? WHERE id = ?";
+            jdbcTemplate.update(updateAuthorScoreSql, scoreToAddToAuthor, userID);
+
+
         }
         return 1;
 

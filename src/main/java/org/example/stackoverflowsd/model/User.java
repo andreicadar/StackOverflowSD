@@ -26,7 +26,7 @@ public class User {
     private String role;
 
     @Column(name = "score")
-    private int score;
+    private float score;
 
 
 
@@ -73,11 +73,11 @@ public class User {
     public User() {
     }
 
-    public void setScore(int score) {
+    public void setScore(float score) {
         this.score = score;
     }
 
-    public int getScore() {
+    public float getScore() {
         return score;
     }
 
@@ -89,7 +89,7 @@ public class User {
         this.role = role;
     }
 
-    public User(Long id, String username, String email, String password, String role, int score) {
+    public User(Long id, String username, String email, String password, String role, float score) {
         this.id = id;
         this.username = username;
         this.email = email;

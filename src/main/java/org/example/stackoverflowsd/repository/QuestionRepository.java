@@ -343,6 +343,16 @@ public class QuestionRepository implements QuestionInterface {
             }
             final String updateSql2 = "UPDATE question SET score = score + ? WHERE id = ?";
             jdbcTemplate.update(updateSql2, 2 * upvote, questionID);
+
+            float scoreToAdd = 0;
+            if(upvote == 1){
+                scoreToAdd = 4.0f;
+            }
+            else {
+                scoreToAdd = -4.0f;
+            }
+            final String updateAuthorScoreSql = "UPDATE user SET score = score + ? WHERE id = ?";
+            jdbcTemplate.update(updateAuthorScoreSql, scoreToAdd, userID);
         }
         else {
             final String insertSql = "INSERT INTO user_question_vote (questionID, userID, upvote) VALUES (?,?,?)";
@@ -350,6 +360,17 @@ public class QuestionRepository implements QuestionInterface {
 
             final String updateSql = "UPDATE question SET score = score + ? WHERE id = ?";
             jdbcTemplate.update(updateSql, upvote, questionID);
+
+            //update author score
+            float scoreToAdd = 0;
+            if(upvote == 1){
+                scoreToAdd = 2.5f;
+            }
+            else {
+                scoreToAdd = -1.5f;
+            }
+            final String updateAuthorScoreSql = "UPDATE user SET score = score + ? WHERE id = ?";
+            jdbcTemplate.update(updateAuthorScoreSql, scoreToAdd, userID);
         }
         return 1;
     }

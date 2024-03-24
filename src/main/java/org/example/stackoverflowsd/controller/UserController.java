@@ -158,5 +158,41 @@ public class UserController {
         }
     }
 
+    @PostMapping("/upvoteQuestion")
+    public ResponseEntity<String> upvoteQuestion(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int questionID) {
+        if(checkIfUserMatchesToken(token, username) == 1) {
+            if(userService.upvoteQuestion(username, questionID) == 1) {
+                return ResponseEntity.ok("Question upvoted successfully");
+            }
+            else if(userService.upvoteQuestion(username, questionID) == 2) {
+                return ResponseEntity.badRequest().body("Question already upvoted");
+            }
+            else {
+                return ResponseEntity.badRequest().body("Cannot vote own question");
+            }
+        }
+        else {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
+    @PostMapping("/downvoteQuestion")
+    public ResponseEntity<String> downvoteQuestion(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int questionID) {
+        if(checkIfUserMatchesToken(token, username) == 1) {
+            if(userService.downvoteQuestion(username, questionID) == 1) {
+                return ResponseEntity.ok("Question downvoted successfully");
+            }
+            else if(userService.upvoteQuestion(username, questionID) == 2) {
+                return ResponseEntity.badRequest().body("Question already downvoted");
+            }
+            else {
+                return ResponseEntity.badRequest().body("Cannot downvote own question");
+            }
+        }
+        else {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
 
 }

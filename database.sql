@@ -18,6 +18,34 @@ USE `stackoverflowsd`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `answer`
+--
+
+DROP TABLE IF EXISTS `answer`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `answer` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `userID` int NOT NULL,
+  `text` varchar(5000) NOT NULL,
+  `creationTim` datetime NOT NULL,
+  `picturePath` varchar(400) DEFAULT NULL,
+  `score` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `answer`
+--
+
+LOCK TABLES `answer` WRITE;
+/*!40000 ALTER TABLE `answer` DISABLE KEYS */;
+/*!40000 ALTER TABLE `answer` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `question`
 --
 
@@ -27,10 +55,11 @@ DROP TABLE IF EXISTS `question`;
 CREATE TABLE `question` (
   `id` int NOT NULL AUTO_INCREMENT,
   `author` varchar(45) NOT NULL,
-  `title` varchar(200) NOT NULL,
-  `text` varchar(2000) NOT NULL,
+  `title` varchar(300) NOT NULL,
+  `text` varchar(5000) NOT NULL,
   `creationTime` datetime NOT NULL,
   `picturePath` varchar(400) DEFAULT NULL,
+  `score` int DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -42,7 +71,7 @@ CREATE TABLE `question` (
 
 LOCK TABLES `question` WRITE;
 /*!40000 ALTER TABLE `question` DISABLE KEYS */;
-INSERT INTO `question` VALUES (12,'arici','spring auth problem','Ba io orice fac numa nu mere spring, iar la colega veverita ii mere tat','2024-03-23 01:06:43','.\\images\\Q12U3Screenshot mail UMD.png'),(13,'arici','nu mere uindows','Ba io orice fac numa nu mere spring, iar la colega veverita ii mere tat','2024-03-23 01:08:53','.\\images\\Q13U3.png'),(16,'veveritzaHackeritza','Merge incet laptop-ul','Am ceva laptop avion cu Intel i7, NVIDIA RTX 4090, dar cand pornesc notepad dureaza cam 10 secunde pana porneste, colegul meu arici a zis ca nu stie de ce, dau funda.','2024-03-24 12:59:59','.\\images\\Q16U9.png'),(17,'veveritzaHackeritza','Nu tine bateria la laptop','Noa eu nu demult mi-am luat laptop cu Intel i7 la care cica tine bateria da la mine sigur nu tine. Stiti ce as putea face?','2024-03-24 13:00:56','.\\images\\Q17U9.png'),(18,'veveritzaHackeritza','Nu merge lumina la tastatura','Pe tot acelasi laptop nou, ca deja inebunesc, nu merge nici lumina de la tastatura, dau upvote la top comment','2024-03-24 13:04:18','.\\images\\Q18U9.png'),(22,'iepurilaRila','Visual Studio 2022 Crash','Am instalat update nou pe visual studio si nu mai merge, oare sa fie ca am dat update la windows deodata?','2024-03-24 13:12:33','.\\images\\Q22U10.png'),(23,'iepurilaRila','Spring dependency circular','Am tot adaugat dependencies ca indienii de pe youtube si acuma imi da ca is circulare','2024-03-24 13:13:24','.\\images\\Q23U10.png'),(24,'iepurilaRila','MySQL am uitat parola','Ca tot romanul mi-am uitat parola la baza de date, ce pot face?','2024-03-24 13:14:05','.\\images\\Q24U10.png'),(25,'sobolan','Anagajare 2 firme','Ce ziceti ma pot anagaja la 2 firme deodata? Am un loc de munca bun acum, dar mai am o oferta de 10k euro pe luna net','2024-03-24 13:15:23','.\\images\\Q25U11.png'),(26,'sobolan','Merita intelij','Auziti voi ce faceti cand aveti prea multi bani? De ex urmeaza sa am un proiect pe spring si am atatia bani incat chiar mi-as lua intelij. Oare ajuta pentru spring intelij fata de eclipse?','2024-03-24 13:16:55','.\\images\\Q26U11.png'),(27,'dodgeTheDogo','Tehnoclogii back end','Voi ce tehnologii folositi pe back end? Eu momentan folosesc spring ca toata lumea zice ca ii such wow, da nu mi se pare tare fain ca ii totu gata facut gen eu ce mai gandesc? Sriu //copilot fa aia, tac pac tab de 2 ori si am proiectu gata. Am auzit ca la alte tehnologii ai mai mult de gandit ca na nu site copilotu ','2024-03-24 13:19:08','.\\images\\Q27U12.png'),(28,'dodgeTheDogo','Cast la int','Cand castez ceva la int imi da o erore ciudata intelij asta, cica cannot cast int, ati mai intalnit?','2024-03-24 13:21:53','.\\images\\Q28U12.png');
+INSERT INTO `question` VALUES (12,'arici','spring auth problem','Ba io orice fac numa nu mere spring, iar la colega veverita ii mere tat','2024-03-23 01:06:43','.\\images\\Q12U3Screenshot mail UMD.png',0),(13,'arici','nu mere uindows','Ba io orice fac numa nu mere spring, iar la colega veverita ii mere tat','2024-03-23 01:08:53','.\\images\\Q13U3.png',0),(16,'veveritzaHackeritza','Merge incet laptop-ul','Am ceva laptop avion cu Intel i7, NVIDIA RTX 4090, dar cand pornesc notepad dureaza cam 10 secunde pana porneste, colegul meu arici a zis ca nu stie de ce, dau funda.','2024-03-24 12:59:59','.\\images\\Q16U9.png',-1),(17,'veveritzaHackeritza','Nu tine bateria la laptop','Noa eu nu demult mi-am luat laptop cu Intel i7 la care cica tine bateria da la mine sigur nu tine. Stiti ce as putea face?','2024-03-24 13:00:56','.\\images\\Q17U9.png',1),(18,'veveritzaHackeritza','Nu merge lumina la tastatura','Pe tot acelasi laptop nou, ca deja inebunesc, nu merge nici lumina de la tastatura, dau upvote la top comment','2024-03-24 13:04:18','.\\images\\Q18U9.png',0),(22,'iepurilaRila','Visual Studio 2022 Crash','Am instalat update nou pe visual studio si nu mai merge, oare sa fie ca am dat update la windows deodata?','2024-03-24 13:12:33','.\\images\\Q22U10.png',0),(23,'iepurilaRila','Spring dependency circular','Am tot adaugat dependencies ca indienii de pe youtube si acuma imi da ca is circulare','2024-03-24 13:13:24','.\\images\\Q23U10.png',0),(24,'iepurilaRila','MySQL am uitat parola','Ca tot romanul mi-am uitat parola la baza de date, ce pot face?','2024-03-24 13:14:05','.\\images\\Q24U10.png',0),(25,'sobolan','Anagajare 2 firme','Ce ziceti ma pot anagaja la 2 firme deodata? Am un loc de munca bun acum, dar mai am o oferta de 10k euro pe luna net','2024-03-24 13:15:23','.\\images\\Q25U11.png',0),(26,'sobolan','Merita intelij','Auziti voi ce faceti cand aveti prea multi bani? De ex urmeaza sa am un proiect pe spring si am atatia bani incat chiar mi-as lua intelij. Oare ajuta pentru spring intelij fata de eclipse?','2024-03-24 13:16:55','.\\images\\Q26U11.png',-1),(27,'dodgeTheDogo','Tehnoclogii back end','Voi ce tehnologii folositi pe back end? Eu momentan folosesc spring ca toata lumea zice ca ii such wow, da nu mi se pare tare fain ca ii totu gata facut gen eu ce mai gandesc? Sriu //copilot fa aia, tac pac tab de 2 ori si am proiectu gata. Am auzit ca la alte tehnologii ai mai mult de gandit ca na nu site copilotu ','2024-03-24 13:19:08','.\\images\\Q27U12.png',0),(28,'dodgeTheDogo','Cast la int','Cand castez ceva la int imi da o erore ciudata intelij asta, cica cannot cast int, ati mai intalnit?','2024-03-24 13:21:53','.\\images\\Q28U12.png',0);
 /*!40000 ALTER TABLE `question` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -131,6 +160,37 @@ LOCK TABLES `user` WRITE;
 INSERT INTO `user` VALUES (3,'arici','$2a$10$yenK7LSztXLuSJ4IPxBT0.jzIBcxrDyc0rJOYOO7u0nAZvR55A.TS','ariciTzepos@yahoo.com','ROLE_USER',0),(6,'arici2','$2a$10$/NTxr8XvnZwGToXKXNy2Ruju1FwYNnFKVb8iHPt5RIJOS5EajJb92','ariciTzepos@yahoo.com','ROLE_USER',0),(8,'arici3','$2a$10$aesY4PtI3/uACVTMfG73.OFdOY..Dw.fHweAExYET0z0ZM.zDtZFm','ariciTzepos@yahoo.com','ROLE_USER',0),(9,'veveritzaHackeritza','$2a$10$r939K7DloHe34TcSeA7D.uaLLSaC5GPe.yvMA1BmTBr39uAonR6wO','veveritza1337@yahoo.com','ROLE_USER',0),(10,'iepurilaRila','$2a$10$fDoDH8PGt74nG7Tt29x0d.pi9rp.NfBrXOCOSEx8TdZKd7mbL0cw.','iepurascpp@yahoo.com','ROLE_USER',0),(11,'sobolan','$2a$10$wRABP7QsYDljSA7P6HuHHOloYQ9ZFqZQpjGN4OikYH3E2XYnO6PXy','sobo@yahoo.com','ROLE_USER',0),(12,'dodgeTheDogo','$2a$10$LntDDsI4pcMfzR1XfMbNKOrS02b2YJb3a06NyiGhm5N3xzFCjGvbu','scoobyDoo@yahoo.com','ROLE_USER',0);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `user_question_vote`
+--
+
+DROP TABLE IF EXISTS `user_question_vote`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user_question_vote` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `userID` int NOT NULL,
+  `questionID` int NOT NULL,
+  `upvote` int NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  KEY `userID_FK_idx` (`userID`),
+  KEY `questionID_FK_idx` (`questionID`),
+  CONSTRAINT `questionID_FK` FOREIGN KEY (`questionID`) REFERENCES `question` (`id`),
+  CONSTRAINT `userID_FK` FOREIGN KEY (`userID`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user_question_vote`
+--
+
+LOCK TABLES `user_question_vote` WRITE;
+/*!40000 ALTER TABLE `user_question_vote` DISABLE KEYS */;
+INSERT INTO `user_question_vote` VALUES (8,3,16,-1),(9,3,17,1),(10,3,26,-1);
+/*!40000 ALTER TABLE `user_question_vote` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -141,4 +201,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-03-24 13:39:20
+-- Dump completed on 2024-03-24 17:06:50

@@ -107,7 +107,8 @@ public class QuestionRepository implements QuestionInterface {
                     rs.getString("text"),
                     rs.getTimestamp("creationTime").toLocalDateTime(),
                     rs.getString("picturePath"),
-                    rs.getString("tagNames"));
+                    rs.getString("tagNames"),
+                    rs.getInt("score"));
         });
         return questions;
     }
@@ -217,7 +218,8 @@ public class QuestionRepository implements QuestionInterface {
                         rs.getString("text"),
                         rs.getTimestamp("creationTime").toLocalDateTime(),
                         rs.getString("picturePath"),
-                        rs.getString("tagNames"));
+                        rs.getString("tagNames"),
+                        rs.getInt("score"));
                     });
 
                 if (!question.getAuthor().equals(author)) {
@@ -328,7 +330,8 @@ public class QuestionRepository implements QuestionInterface {
                     rs.getString("text"),
                     rs.getTimestamp("creationTime").toLocalDateTime(),
                     rs.getString("picturePath"),
-                    rs.getString("tagNames"));
+                    rs.getString("tagNames"),
+                    rs.getInt("score"));
         });
 
 
@@ -347,4 +350,43 @@ public class QuestionRepository implements QuestionInterface {
         return questions;
     }
 
+    public int voteQuestion(String username, int questionID, int upvote) {
+        final String selectSql = "SELECT author FROM question WHERE id = ?";
+        String author = jdbcTemplate.queryForObject(selectSql, String.class, questionID);
+
+        if (author.equals(username)) {
+            return 0;
+        }
+
+        final String selectUserSql = "SELECT id FROM user WHERE username = ?";
+        int userID = jdbcTemplate.queryForObject(selectUserSql, Integer.class, username);
+
+        //get upvote column value
+        final String selectSql2 = "SELECT * FROM user_question_vote WHERE questionID = ? AND userID = ?";
+
+        //extract column values
+        List<Integer> upvoteList = jdbcTemplate.query(selectSql2, new Object[]{questionID, userID}, (rs, rowNum) -> {
+            return rs.getInt("upvote");
+        });
+
+        if(upvoteList.size() > 0) {
+            if(upvoteList.get(0) == upvote) {
+                return 2;
+            }
+            else {
+                final String updateSql = "UPDATE user_question_vote SET upvote = ? WHERE questionID = ? AND userID = ?";
+                jdbcTemplate.update(updateSql, upvote, questionID, userID);
+            }
+            final String updateSql2 = "UPDATE question SET score = score + ? WHERE id = ?";
+            jdbcTemplate.update(updateSql2, 2 * upvote, questionID);
+        }
+        else {
+            final String insertSql = "INSERT INTO user_question_vote (questionID, userID, upvote) VALUES (?,?,?)";
+            jdbcTemplate.update(insertSql, questionID, userID, upvote);
+
+            final String updateSql = "UPDATE question SET score = score + ? WHERE id = ?";
+            jdbcTemplate.update(updateSql, upvote, questionID);
+        }
+        return 1;
+    }
 }

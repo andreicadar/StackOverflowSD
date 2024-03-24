@@ -32,6 +32,9 @@ public class Question {
     @Column(name = "tags")
     private String tags;
 
+    @Column(name = "score")
+    private int score;
+
     public Question() {
 
     }
@@ -93,6 +96,14 @@ public class Question {
         return tags;
     }
 
+    public void setScore(int score) {
+        this.score = score;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
     public Question(String author, String title, String text, String tags) {
         this.author = author;
         this.title = title;
@@ -100,7 +111,7 @@ public class Question {
         this.tags = tags;
     }
 
-    public Question(Long id, String author, String title, String text, LocalDateTime creationTime, String picturePath, String tags) {
+    public Question(Long id, String author, String title, String text, LocalDateTime creationTime, String picturePath, String tags, int score) {
         this.id = id;
         this.author = author;
         this.title = title;
@@ -108,6 +119,7 @@ public class Question {
         this.creationTime = creationTime;
         this.picturePath = picturePath;
         this.tags = tags;
+        this.score = score;
     }
 
 }

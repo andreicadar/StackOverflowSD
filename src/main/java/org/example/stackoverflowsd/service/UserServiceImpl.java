@@ -76,4 +76,12 @@ public class UserServiceImpl implements UserDetailsService {
     public Object searchQuestions(String title, String text, String author, String tags) {
         return questionRepository.searchQuestions(title, text, author, tags);
     }
+
+    public int upvoteQuestion(String username, int questionID) {
+        return questionRepository.voteQuestion(username, questionID, 1);
+    }
+
+    public int downvoteQuestion(String username, int questionID) {
+        return questionRepository.voteQuestion(username, questionID, -1);
+    }
 }

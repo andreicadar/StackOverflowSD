@@ -94,4 +94,16 @@ public class UserServiceImpl implements UserDetailsService {
     public QuestionAnswers getQuestionDetails(int questionID) {
         return questionRepository.getQuestionDetails(questionID);
     }
+
+    public int deleteAnswer(String username, Long answerID) {
+        return answerRepository.deleteAnswer(username, answerID);
+    }
+
+    public int upvoteAnswer(String username, int answerID) {
+        return answerRepository.voteAnswer(username, answerID, 1);
+    }
+
+    public int downvoteAnswer(String username, int answerID) {
+        return answerRepository.voteAnswer(username, answerID, -1);
+    }
 }

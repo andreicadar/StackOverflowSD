@@ -232,5 +232,56 @@ public class UserController {
         }
     }
 
+    @PostMapping("/deleteAnswer")
+    public ResponseEntity<String> deleteAnswer(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam Long answerID) {
+        if(checkIfUserMatchesToken(token, username) == 1) {
+            if(userService.deleteAnswer(username, answerID) == 1) {
+                return ResponseEntity.ok("Answer deleted successfully");
+            }
+            else {
+                return ResponseEntity.badRequest().build();
+            }
+        }
+        else {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
+    @PostMapping("/upvoteAnswer")
+    public ResponseEntity<String> upvoteAnswer(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int answerID) {
+        if(checkIfUserMatchesToken(token, username) == 1) {
+            if(userService.upvoteAnswer(username, answerID) == 1) {
+                return ResponseEntity.ok("Answer upvoted successfully");
+            }
+            else if(userService.upvoteAnswer(username, answerID) == 2) {
+                return ResponseEntity.badRequest().body("Answer already upvoted");
+            }
+            else {
+                return ResponseEntity.badRequest().body("Cannot vote own answer");
+            }
+        }
+        else {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
+    @PostMapping("/downvoteAnswer")
+    public ResponseEntity<String> downvoteAnswer(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int answerID) {
+        if(checkIfUserMatchesToken(token, username) == 1) {
+            if(userService.downvoteAnswer(username, answerID) == 1) {
+                return ResponseEntity.ok("Answer downvoted successfully");
+            }
+            else if(userService.downvoteAnswer(username, answerID) == 2) {
+                return ResponseEntity.badRequest().body("Answer already downvoted");
+            }
+            else {
+                return ResponseEntity.badRequest().body("Cannot downvote own answer");
+            }
+        }
+        else {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
 
 }

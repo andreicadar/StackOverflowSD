@@ -136,6 +136,10 @@ public class QuestionRepository implements QuestionInterface {
             String deleteQuestionTagJoinSql = "DELETE FROM question_tag_join WHERE question_id = ?";
             jdbcTemplate.update(deleteQuestionTagJoinSql, questionID);
 
+            //delete question votes
+            String deleteQuestionVoteSql = "DELETE FROM user_question_vote WHERE questionID = ?";
+            jdbcTemplate.update(deleteQuestionVoteSql, questionID);
+
             final String selectPicturePathSql = "SELECT picturePath FROM question WHERE id = ?";
             String picturePath = jdbcTemplate.queryForObject(selectPicturePathSql, String.class, questionID);
             Path filePath = Paths.get(picturePath);
@@ -364,7 +368,7 @@ public class QuestionRepository implements QuestionInterface {
                 "FROM answer a " +
                 "LEFT JOIN user u ON a.userID = u.id " +
                 "WHERE a.questionID = ? " +
-                "ORDER BY a.score, a.creationTime DESC";
+                "ORDER BY a.score DESC, a.creationTime DESC";
 
         Question question = jdbcTemplate.queryForObject(selectSql, new Object[]{questionID}, (rs, rowNum) -> {
             return new Question(

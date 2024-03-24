@@ -1,8 +1,7 @@
 package org.example.stackoverflowsd.service;
 
-import org.example.stackoverflowsd.model.Question;
-import org.example.stackoverflowsd.model.User;
-import org.example.stackoverflowsd.model.UserInfoDetails;
+import org.example.stackoverflowsd.model.*;
+import org.example.stackoverflowsd.repository.AnswerRepository;
 import org.example.stackoverflowsd.repository.QuestionRepository;
 import org.example.stackoverflowsd.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +24,9 @@ public class UserServiceImpl implements UserDetailsService {
 
     @Autowired
     private QuestionRepository questionRepository;
+
+    @Autowired
+    private AnswerRepository answerRepository;
 
     @Autowired
     private PasswordEncoder encoder;
@@ -83,5 +85,13 @@ public class UserServiceImpl implements UserDetailsService {
 
     public int downvoteQuestion(String username, int questionID) {
         return questionRepository.voteQuestion(username, questionID, -1);
+    }
+
+    public int answerQuestion(Answer answer, MultipartFile image, int questionID) throws IOException {
+        return answerRepository.answerQuestion(answer, image, questionID);
+    }
+
+    public QuestionAnswers getQuestionDetails(int questionID) {
+        return questionRepository.getQuestionDetails(questionID);
     }
 }

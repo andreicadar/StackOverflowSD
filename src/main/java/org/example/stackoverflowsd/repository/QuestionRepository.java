@@ -1,6 +1,8 @@
 package org.example.stackoverflowsd.repository;
 
+import org.example.stackoverflowsd.model.Answer;
 import org.example.stackoverflowsd.model.Question;
+import org.example.stackoverflowsd.model.QuestionAnswers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -13,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.PreparedStatement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,14 +29,19 @@ public class QuestionRepository implements QuestionInterface {
 
 
     public int postQuestion(Question question, MultipartFile image) {
-        final String insertSql = "INSERT INTO question (author, title, text, creationTime, picturePath) VALUES (?,?,?,NOW(),?)";
+        //get userID from author
+        String sqlQuery = "SELECT id FROM user WHERE username = ?";
+        int authorID = jdbcTemplate.queryForObject(sqlQuery, Integer.class, question.getAuthor());
+
+
+        final String insertSql = "INSERT INTO question (userID, title, text, creationTime, picturePath) VALUES (?,?,?,NOW(),?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         try {
 
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection.prepareStatement(insertSql, new String[]{"id"});
-                ps.setString(1, question.getAuthor());
+                ps.setInt(1, authorID);
                 ps.setString(2, question.getTitle());
                 ps.setString(3, question.getText());
                 ps.setString(4, question.getPicturePath());
@@ -62,10 +70,6 @@ public class QuestionRepository implements QuestionInterface {
                 jdbcTemplate.update(insertQuestionTagSql, newQuestionID, tagID);
             }
 
-            //get user id
-            final String selectUserSql = "SELECT id FROM user WHERE username = ?";
-            int userID = jdbcTemplate.queryForObject(selectUserSql, Integer.class, question.getAuthor());
-
 
             String uploadDir = "./images";
 
@@ -74,7 +78,7 @@ public class QuestionRepository implements QuestionInterface {
                 Files.createDirectories(dirPath);
             }
 
-            Path filePath = Paths.get(uploadDir, "Q" + newQuestionID + "U" + userID + image.getOriginalFilename().substring(image.getOriginalFilename().length() - 4));
+            Path filePath = Paths.get(uploadDir, "Q" + newQuestionID + "U" + authorID + image.getOriginalFilename().substring(image.getOriginalFilename().length() - 4));
             Files.write(filePath, image.getBytes());
 
             final String updatePicturePathSql = "UPDATE question SET picturePath = ? WHERE id = ?";
@@ -90,19 +94,20 @@ public class QuestionRepository implements QuestionInterface {
 
     public List<Question> getQuestionsOfUser(String username) {
 
+        int userID = jdbcTemplate.queryForObject("SELECT id FROM user WHERE username = ?", Integer.class, username);
 
         final String selectSql = "SELECT q.*, GROUP_CONCAT(t.name SEPARATOR ', ') AS tagNames " +
                 "FROM question q " +
                 "LEFT JOIN question_tag_join qt ON q.id = qt.question_id " +
                 "LEFT JOIN tag t ON qt.tag_id = t.id " +
-                "WHERE q.author = ? " +
+                "WHERE q.userID = ? " +
                 "GROUP BY q.id " +
                 "ORDER BY q.creationTime DESC";
 
-        List<Question> questions = jdbcTemplate.query(selectSql, new Object[]{username}, (rs, rowNum) -> {
+        List<Question> questions = jdbcTemplate.query(selectSql, new Object[]{userID}, (rs, rowNum) -> {
             return new Question(
                     rs.getLong("id"),
-                    rs.getString("author"),
+                    rs.getInt("userID"),
                     rs.getString("title"),
                     rs.getString("text"),
                     rs.getTimestamp("creationTime").toLocalDateTime(),
@@ -110,8 +115,291 @@ public class QuestionRepository implements QuestionInterface {
                     rs.getString("tagNames"),
                     rs.getInt("score"));
         });
+
+        for(Question question : questions) {
+            final String selectSql2 = "SELECT username FROM user WHERE id = ?";
+            String author = jdbcTemplate.queryForObject(selectSql2, String.class, question.getUserID());
+            question.setAuthor(author);
+        }
         return questions;
     }
+
+    public int deleteQuestion(String username, Long questionID) {
+        final String selectSql = "SELECT userID FROM question WHERE id = ?";
+        int userID = jdbcTemplate.queryForObject(selectSql, Integer.class, questionID);
+
+        //get username from username
+        final String selectUserSql = "SELECT username FROM user WHERE id = ?";
+        String author = jdbcTemplate.queryForObject(selectUserSql, String.class, userID);
+
+        if (author.equals(username)) {
+            String deleteQuestionTagJoinSql = "DELETE FROM question_tag_join WHERE question_id = ?";
+            jdbcTemplate.update(deleteQuestionTagJoinSql, questionID);
+
+            final String selectPicturePathSql = "SELECT picturePath FROM question WHERE id = ?";
+            String picturePath = jdbcTemplate.queryForObject(selectPicturePathSql, String.class, questionID);
+            Path filePath = Paths.get(picturePath);
+            try {
+                Files.delete(filePath);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+            String deleteSql = "DELETE FROM question WHERE id = ?";
+            jdbcTemplate.update(deleteSql, questionID);
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    public int updateQuestion(String author, int id, String title, String text, String tags, MultipartFile image) throws IOException {
+
+        try {;
+
+            final String selectSql = "SELECT q.*, GROUP_CONCAT(t.name SEPARATOR ', ') AS tagNames " +
+                    "FROM question q " +
+                    "LEFT JOIN question_tag_join qt ON q.id = qt.question_id " +
+                    "LEFT JOIN tag t ON qt.tag_id = t.id " +
+                    "WHERE q.id = ? ";
+
+            Question question = jdbcTemplate.queryForObject(selectSql, new Object[]{id}, (rs, rowNum) -> {
+                return new Question(
+                        rs.getLong("id"),
+                        rs.getInt("userID"),
+                        rs.getString("title"),
+                        rs.getString("text"),
+                        rs.getTimestamp("creationTime").toLocalDateTime(),
+                        rs.getString("picturePath"),
+                        rs.getString("tagNames"),
+                        rs.getInt("score"));
+            });
+
+            final String selectUserSql = "SELECT username FROM user WHERE id = ?";
+            String authorFromID = jdbcTemplate.queryForObject(selectUserSql, String.class, question.getUserID());
+
+            if (!authorFromID.equals(author)) {
+                return 0;
+            }
+
+            String uploadDir = "./images";
+
+            Path filePath = Paths.get(uploadDir, "Q" + question.getId() + "U" + authorFromID + image.getOriginalFilename().substring(image.getOriginalFilename().length() - 4));
+            Files.write(filePath, image.getBytes());
+
+            final String updatePicturePathSql = "UPDATE question SET picturePath = ? WHERE id = ?";
+            jdbcTemplate.update(updatePicturePathSql, filePath.toString(), question.getId());
+
+
+
+            if(title == null) {
+                title = question.getTitle();
+            }
+            if(text == null) {
+                text = question.getText();
+            }
+            if(tags == null) {
+                tags = question.getTags();
+            }
+
+            final String deleteQuestionTagJoinSql = "DELETE FROM question_tag_join WHERE question_id = ?";
+            jdbcTemplate.update(deleteQuestionTagJoinSql, id);
+
+
+
+            String[] tagsArray = tags.split(",");
+
+            for (String tag : tagsArray) {
+                tag = tag.toLowerCase();
+                final String insertTagSql = "INSERT INTO tag (name) VALUES (?) ON DUPLICATE KEY UPDATE name=name";
+                jdbcTemplate.update(insertTagSql, tag);
+            }
+
+            for (String tag : tagsArray) {
+                tag = tag.toLowerCase();
+                final String selectTagSql = "SELECT id FROM tag WHERE name = ?";
+                int tagID = jdbcTemplate.queryForObject(selectTagSql, Integer.class, tag);
+                final String insertQuestionTagSql = "INSERT INTO question_tag_join (question_id, tag_id) VALUES (?,?)";
+                jdbcTemplate.update(insertQuestionTagSql, id, tagID);
+            }
+
+
+            final String updateSql = "UPDATE question SET title = ?, text = ? WHERE id = ?";
+
+            jdbcTemplate.update(updateSql, title, text, question.getId());
+
+            return 1;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public Object searchQuestions(String title, String text, String author, String tags) {
+        final String selectSql = "SELECT q.*, GROUP_CONCAT(t.name SEPARATOR ', ') AS tagNames " +
+                "FROM question q " +
+                "LEFT JOIN question_tag_join qt ON q.id = qt.question_id " +
+                "LEFT JOIN tag t ON qt.tag_id = t.id ";
+
+        StringBuilder whereClause = null;
+
+        int first = 0;
+
+        if (title != null) {
+            whereClause = new StringBuilder("WHERE ");
+            whereClause.append("q.title LIKE '%").append(title).append("%' ");
+            first = 1;
+        }
+        if (text != null) {
+            if (first == 1) {
+                whereClause.append("AND ");
+            }
+            else {
+                whereClause = new StringBuilder("WHERE ");
+            }
+            whereClause.append("q.text LIKE '%").append(text).append("%' ");
+            first = 1;
+        }
+        if (author != null) {
+            final String selectUserSql = "SELECT id FROM user WHERE username = ?";
+            int authorID = jdbcTemplate.queryForObject(selectUserSql, Integer.class, author);
+
+            if (first == 1) {
+                whereClause.append("AND ");
+            }
+            else {
+                whereClause = new StringBuilder("WHERE ");
+            }
+            whereClause.append("q.userID = ").append(authorID).append(" ");
+            first = 1;
+
+        }
+
+        if(first == 0) {
+            whereClause = new StringBuilder("");
+        }
+
+        List<Question> questions = jdbcTemplate.query(selectSql + whereClause + "GROUP BY q.id ORDER BY q.creationTime DESC", (rs, rowNum) -> {
+            return new Question(
+                    rs.getLong("id"),
+                    rs.getInt("userID"),
+                    rs.getString("title"),
+                    rs.getString("text"),
+                    rs.getTimestamp("creationTime").toLocalDateTime(),
+                    rs.getString("picturePath"),
+                    rs.getString("tagNames"),
+                    rs.getInt("score"));
+        });
+
+
+        if (tags != null) {
+            String[] tagsArray = tags.split(",");
+            questions.removeIf(question -> {
+                for (String tag : tagsArray) {
+                    if (!question.getTags().contains(tag)) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
+
+        return questions;
+    }
+
+    public int voteQuestion(String username, int questionID, int upvote) {
+        final String selectSql = "SELECT userID FROM question WHERE id = ?";
+        int userID = jdbcTemplate.queryForObject(selectSql, Integer.class, questionID);
+
+        final String selectUserSql = "SELECT username FROM user WHERE id = ?";
+        String author = jdbcTemplate.queryForObject(selectUserSql, String.class, userID);
+
+
+        if (author.equals(username)) {
+            return 0;
+        }
+
+        //get upvote column value
+        final String selectSql2 = "SELECT * FROM user_question_vote WHERE questionID = ? AND userID = ?";
+
+        //extract column values
+        List<Integer> upvoteList = jdbcTemplate.query(selectSql2, new Object[]{questionID, userID}, (rs, rowNum) -> {
+            return rs.getInt("upvote");
+        });
+
+        if(upvoteList.size() > 0) {
+            if(upvoteList.get(0) == upvote) {
+                return 2;
+            }
+            else {
+                final String updateSql = "UPDATE user_question_vote SET upvote = ? WHERE questionID = ? AND userID = ?";
+                jdbcTemplate.update(updateSql, upvote, questionID, userID);
+            }
+            final String updateSql2 = "UPDATE question SET score = score + ? WHERE id = ?";
+            jdbcTemplate.update(updateSql2, 2 * upvote, questionID);
+        }
+        else {
+            final String insertSql = "INSERT INTO user_question_vote (questionID, userID, upvote) VALUES (?,?,?)";
+            jdbcTemplate.update(insertSql, questionID, userID, upvote);
+
+            final String updateSql = "UPDATE question SET score = score + ? WHERE id = ?";
+            jdbcTemplate.update(updateSql, upvote, questionID);
+        }
+        return 1;
+    }
+
+    public QuestionAnswers getQuestionDetails(int questionID) {
+        final String selectSql = "SELECT q.*, GROUP_CONCAT(t.name SEPARATOR ', ') AS tagNames, u.username " +
+                "FROM question q " +
+                "LEFT JOIN question_tag_join qt ON q.id = qt.question_id " +
+                "LEFT JOIN tag t ON qt.tag_id = t.id " +
+                "LEFT JOIN user u ON q.userID = u.id " +
+                "WHERE q.id = ? " +
+                "GROUP BY q.id";
+
+        //retrieve answers from question in join table
+        final String selectSql2 = "SELECT a.*, u.username " +
+                "FROM answer a " +
+                "LEFT JOIN user u ON a.userID = u.id " +
+                "WHERE a.questionID = ? " +
+                "ORDER BY a.score, a.creationTime DESC";
+
+        Question question = jdbcTemplate.queryForObject(selectSql, new Object[]{questionID}, (rs, rowNum) -> {
+            return new Question(
+                    rs.getLong("id"),
+                    rs.getInt("userID"),
+                    rs.getString("title"),
+                    rs.getString("text"),
+                    rs.getTimestamp("creationTime").toLocalDateTime(),
+                    rs.getString("picturePath"),
+                    rs.getString("tagNames"),
+                    rs.getInt("score"));
+        });
+
+        final String selectSql3 = "SELECT username FROM user WHERE id = ?";
+        String author = jdbcTemplate.queryForObject(selectSql3, String.class, question.getUserID());
+        question.setAuthor(author);
+
+        List<Answer> answers = jdbcTemplate.query(selectSql2, new Object[]{questionID}, (rs, rowNum) -> {
+            return new Answer(
+                    rs.getLong("id"),
+                    rs.getInt("userID"),
+                    rs.getString("text"),
+                    rs.getTimestamp("creationTime").toLocalDateTime(),
+                    rs.getString("picturePath"),
+                    rs.getInt("score"));
+        });
+
+        for(Answer answer : answers) {
+            final String selectSql4 = "SELECT username FROM user WHERE id = ?";
+            author = jdbcTemplate.queryForObject(selectSql4, String.class, answer.getUserID());
+            answer.setAuthor(author);
+        }
+
+        return new QuestionAnswers(question, answers);
+        }
 
 
     @Override
@@ -174,219 +462,5 @@ public class QuestionRepository implements QuestionInterface {
 
     }
 
-    public int deleteQuestion(String username, Long questionID) {
-        final String selectSql = "SELECT author FROM question WHERE id = ?";
-        String author = jdbcTemplate.queryForObject(selectSql, String.class, questionID);
 
-        if (author.equals(username)) {
-            String deleteQuestionTagJoinSql = "DELETE FROM question_tag_join WHERE question_id = ?";
-            jdbcTemplate.update(deleteQuestionTagJoinSql, questionID);
-
-            final String selectPicturePathSql = "SELECT picturePath FROM question WHERE id = ?";
-            String picturePath = jdbcTemplate.queryForObject(selectPicturePathSql, String.class, questionID);
-            Path filePath = Paths.get(picturePath);
-            try {
-                Files.delete(filePath);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
-            String deleteSql = "DELETE FROM question WHERE id = ?";
-            jdbcTemplate.update(deleteSql, questionID);
-            return 1;
-        } else {
-            return 0;
-        }
-    }
-
-    public int updateQuestion(String author, int id, String title, String text, String tags, MultipartFile image) throws IOException {
-
-        try {;
-
-            final String selectSql = "SELECT q.*, GROUP_CONCAT(t.name SEPARATOR ', ') AS tagNames " +
-                    "FROM question q " +
-                    "LEFT JOIN question_tag_join qt ON q.id = qt.question_id " +
-                    "LEFT JOIN tag t ON qt.tag_id = t.id " +
-                    "WHERE q.id = ? ";
-
-            Question question = jdbcTemplate.queryForObject(selectSql, new Object[]{id}, (rs, rowNum) -> {
-                return new Question(
-                        rs.getLong("id"),
-                        rs.getString("author"),
-                        rs.getString("title"),
-                        rs.getString("text"),
-                        rs.getTimestamp("creationTime").toLocalDateTime(),
-                        rs.getString("picturePath"),
-                        rs.getString("tagNames"),
-                        rs.getInt("score"));
-                    });
-
-                if (!question.getAuthor().equals(author)) {
-                    return 0;
-                }
-
-                final String selectUserSql = "SELECT id FROM user WHERE username = ?";
-                int userID = jdbcTemplate.queryForObject(selectUserSql, Integer.class, author);
-
-                String uploadDir = "./images";
-
-                Path filePath = Paths.get(uploadDir, "Q" + question.getId() + "U" + userID + image.getOriginalFilename().substring(image.getOriginalFilename().length() - 4));
-                Files.write(filePath, image.getBytes());
-
-                final String updatePicturePathSql = "UPDATE question SET picturePath = ? WHERE id = ?";
-                jdbcTemplate.update(updatePicturePathSql, filePath.toString(), question.getId());
-
-
-
-                if(title == null) {
-                    title = question.getTitle();
-                }
-                if(text == null) {
-                    text = question.getText();
-                }
-                if(tags == null) {
-                    tags = question.getTags();
-                }
-
-                final String deleteQuestionTagJoinSql = "DELETE FROM question_tag_join WHERE question_id = ?";
-                jdbcTemplate.update(deleteQuestionTagJoinSql, id);
-
-
-
-                String[] tagsArray = tags.split(",");
-
-            for (String tag : tagsArray) {
-                tag = tag.toLowerCase();
-                final String insertTagSql = "INSERT INTO tag (name) VALUES (?) ON DUPLICATE KEY UPDATE name=name";
-                jdbcTemplate.update(insertTagSql, tag);
-            }
-
-            for (String tag : tagsArray) {
-                tag = tag.toLowerCase();
-                final String selectTagSql = "SELECT id FROM tag WHERE name = ?";
-                int tagID = jdbcTemplate.queryForObject(selectTagSql, Integer.class, tag);
-                final String insertQuestionTagSql = "INSERT INTO question_tag_join (question_id, tag_id) VALUES (?,?)";
-                jdbcTemplate.update(insertQuestionTagSql, id, tagID);
-            }
-
-
-            final String updateSql = "UPDATE question SET title = ?, text = ? WHERE id = ?";
-
-            jdbcTemplate.update(updateSql, title, text, question.getId());
-
-            return 1;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    public Object searchQuestions(String title, String text, String author, String tags) {
-        final String selectSql = "SELECT q.*, GROUP_CONCAT(t.name SEPARATOR ', ') AS tagNames " +
-                "FROM question q " +
-                "LEFT JOIN question_tag_join qt ON q.id = qt.question_id " +
-                "LEFT JOIN tag t ON qt.tag_id = t.id ";
-
-        StringBuilder whereClause = null;
-
-        int first = 0;
-
-        if (title != null) {
-            whereClause = new StringBuilder("WHERE ");
-            whereClause.append("q.title LIKE '%").append(title).append("%' ");
-            first = 1;
-        }
-        if (text != null) {
-            if (first == 1) {
-                whereClause.append("AND ");
-            }
-            else {
-                whereClause = new StringBuilder("WHERE ");
-            }
-            whereClause.append("q.text LIKE '%").append(text).append("%' ");
-            first = 1;
-        }
-        if (author != null) {
-            if (first == 1) {
-                whereClause.append("AND ");
-            }
-            else {
-                whereClause = new StringBuilder("WHERE ");
-            }
-            whereClause.append("q.author = '").append(author).append("' ");
-        }
-
-        if(first == 0) {
-            whereClause = new StringBuilder("");
-        }
-
-        List<Question> questions = jdbcTemplate.query(selectSql + whereClause + "GROUP BY q.id ORDER BY q.creationTime DESC", (rs, rowNum) -> {
-            return new Question(
-                    rs.getLong("id"),
-                    rs.getString("author"),
-                    rs.getString("title"),
-                    rs.getString("text"),
-                    rs.getTimestamp("creationTime").toLocalDateTime(),
-                    rs.getString("picturePath"),
-                    rs.getString("tagNames"),
-                    rs.getInt("score"));
-        });
-
-
-        if (tags != null) {
-            String[] tagsArray = tags.split(",");
-            questions.removeIf(question -> {
-                for (String tag : tagsArray) {
-                    if (!question.getTags().contains(tag)) {
-                        return true;
-                    }
-                }
-                return false;
-            });
-        }
-
-        return questions;
-    }
-
-    public int voteQuestion(String username, int questionID, int upvote) {
-        final String selectSql = "SELECT author FROM question WHERE id = ?";
-        String author = jdbcTemplate.queryForObject(selectSql, String.class, questionID);
-
-        if (author.equals(username)) {
-            return 0;
-        }
-
-        final String selectUserSql = "SELECT id FROM user WHERE username = ?";
-        int userID = jdbcTemplate.queryForObject(selectUserSql, Integer.class, username);
-
-        //get upvote column value
-        final String selectSql2 = "SELECT * FROM user_question_vote WHERE questionID = ? AND userID = ?";
-
-        //extract column values
-        List<Integer> upvoteList = jdbcTemplate.query(selectSql2, new Object[]{questionID, userID}, (rs, rowNum) -> {
-            return rs.getInt("upvote");
-        });
-
-        if(upvoteList.size() > 0) {
-            if(upvoteList.get(0) == upvote) {
-                return 2;
-            }
-            else {
-                final String updateSql = "UPDATE user_question_vote SET upvote = ? WHERE questionID = ? AND userID = ?";
-                jdbcTemplate.update(updateSql, upvote, questionID, userID);
-            }
-            final String updateSql2 = "UPDATE question SET score = score + ? WHERE id = ?";
-            jdbcTemplate.update(updateSql2, 2 * upvote, questionID);
-        }
-        else {
-            final String insertSql = "INSERT INTO user_question_vote (questionID, userID, upvote) VALUES (?,?,?)";
-            jdbcTemplate.update(insertSql, questionID, userID, upvote);
-
-            final String updateSql = "UPDATE question SET score = score + ? WHERE id = ?";
-            jdbcTemplate.update(updateSql, upvote, questionID);
-        }
-        return 1;
-    }
 }

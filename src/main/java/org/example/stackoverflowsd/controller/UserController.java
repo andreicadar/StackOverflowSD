@@ -1,5 +1,6 @@
 package org.example.stackoverflowsd.controller;
 
+import org.example.stackoverflowsd.model.Answer;
 import org.example.stackoverflowsd.model.AuthRequest;
 import org.example.stackoverflowsd.model.Question;
 import org.example.stackoverflowsd.model.User;
@@ -191,6 +192,43 @@ public class UserController {
         }
         else {
             return ResponseEntity.status(401).build();
+        }
+    }
+
+    @GetMapping("/getQuestionDetails")
+    public ResponseEntity<?> getQuestionDetails(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int questionID) {
+        if(checkIfUserMatchesToken(token, username) == 1) {
+            if(userService.getQuestionDetails(questionID) != null) {
+                return ResponseEntity.ok().body(userService.getQuestionDetails(questionID));
+            }
+            else {
+                return ResponseEntity.badRequest().build();
+            }
+        }
+        else {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
+
+    @PostMapping("/answerQuestion")
+    public ResponseEntity<String> answerQuestion(@RequestHeader("Authorization") String token, @RequestParam MultipartFile image,
+                                                 @RequestParam String author, @RequestParam String text,
+                                                 @RequestParam int questionID) {
+
+        try {
+            Answer answer = new Answer(author, text);
+            if (checkIfUserMatchesToken(token, answer.getAuthor()) == 1) {
+                if(userService.answerQuestion(answer, image, questionID) == 1)
+                    return ResponseEntity.ok("Answer posted successfully");
+                else
+                    return ResponseEntity.status(500).build();
+            } else {
+                return ResponseEntity.status(401).build();
+            }
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 

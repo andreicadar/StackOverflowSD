@@ -1,8 +1,12 @@
 package org.example.stackoverflowsd.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 
 
 @Entity
@@ -13,7 +17,6 @@ public class Question {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "author")
     private String author;
 
     @Column(name = "title")
@@ -35,9 +38,23 @@ public class Question {
     @Column(name = "score")
     private int score;
 
+    @JsonIgnore
+    @Column(name = "userID")
+    private int userID;
+
+
     public Question() {
 
     }
+
+    public Question(int userID, String title, String text, String tags) {
+        this.userID = userID;
+        this.title = title;
+        this.text = text;
+        this.tags = tags;
+    }
+
+
 
 
     public void setId(Long id) {
@@ -104,6 +121,14 @@ public class Question {
         return score;
     }
 
+    public void setUserID(int userID) {
+        this.userID = userID;
+    }
+
+    public int getUserID() {
+        return userID;
+    }
+
     public Question(String author, String title, String text, String tags) {
         this.author = author;
         this.title = title;
@@ -114,6 +139,17 @@ public class Question {
     public Question(Long id, String author, String title, String text, LocalDateTime creationTime, String picturePath, String tags, int score) {
         this.id = id;
         this.author = author;
+        this.title = title;
+        this.text = text;
+        this.creationTime = creationTime;
+        this.picturePath = picturePath;
+        this.tags = tags;
+        this.score = score;
+    }
+
+    public Question(Long id, int userID, String title, String text, LocalDateTime creationTime, String picturePath, String tags, int score) {
+        this.id = id;
+        this.userID = userID;
         this.title = title;
         this.text = text;
         this.creationTime = creationTime;

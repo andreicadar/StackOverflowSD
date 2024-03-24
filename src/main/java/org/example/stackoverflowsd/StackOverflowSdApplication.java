@@ -6,6 +6,7 @@ import org.example.stackoverflowsd.configuration.SecurityConfig;
 import org.example.stackoverflowsd.controller.UserController;
 import org.example.stackoverflowsd.model.User;
 import org.example.stackoverflowsd.model.UserInfoDetails;
+import org.example.stackoverflowsd.repository.AnswerRepository;
 import org.example.stackoverflowsd.repository.QuestionRepository;
 import org.example.stackoverflowsd.repository.UserRepository;
 import org.example.stackoverflowsd.service.UserServiceImpl;
@@ -25,6 +26,7 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan(basePackageClasses = SecurityConfig.class)
 @ComponentScan(basePackageClasses = JwtAuthFilter.class)
 @ComponentScan(basePackageClasses = QuestionRepository.class)
+@ComponentScan(basePackageClasses = AnswerRepository.class)
 
 //@ComponentScan("controller")
 //@ComponentScan("service")

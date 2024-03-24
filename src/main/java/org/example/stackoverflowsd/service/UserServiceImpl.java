@@ -73,4 +73,7 @@ public class UserServiceImpl implements UserDetailsService {
         return questionRepository.updateQuestion(author, id, title, text, tags, image);
     }
 
+    public Object searchQuestions(String title, String text, String author, String tags) {
+        return questionRepository.searchQuestions(title, text, author, tags);
+    }
 }

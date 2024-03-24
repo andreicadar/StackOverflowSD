@@ -148,5 +148,15 @@ public class UserController {
         }
     }
 
+    @GetMapping("/searchQuestions")
+    public ResponseEntity<?> searchQuestions(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam(required = false) String title, @RequestParam(required = false) String text, @RequestParam(required = false) String author, @RequestParam(required = false) String tags) {
+        if(checkIfUserMatchesToken(token, username) == 1) {
+            return ResponseEntity.ok(userService.searchQuestions(title, text, author, tags));
+        }
+        else {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
 
 }

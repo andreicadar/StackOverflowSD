@@ -47,14 +47,15 @@ public class QuestionRepository implements QuestionInterface {
 
             for (String tag : tags) {
                 tag = tag.toLowerCase();
+                tag = tag.replaceAll("^\\s+", "");
                 final String insertTagSql = "INSERT INTO tag (name) VALUES (?) ON DUPLICATE KEY UPDATE name=name";
                 //create prepared statement and execute
                 jdbcTemplate.update(insertTagSql, tag);
             }
 
             for (String tag : tags) {
-                //for each tag find the tag id
                 tag = tag.toLowerCase();
+                tag = tag.replaceAll("^\\s+", "");
                 final String selectTagSql = "SELECT id FROM tag WHERE name = ?";
                 int tagID = jdbcTemplate.queryForObject(selectTagSql, Integer.class, tag);
                 final String insertQuestionTagSql = "INSERT INTO question_tag_join (question_id, tag_id) VALUES (?,?)";
@@ -73,7 +74,6 @@ public class QuestionRepository implements QuestionInterface {
                 Files.createDirectories(dirPath);
             }
 
-            // Save the file to the specified directory
             Path filePath = Paths.get(uploadDir, "Q" + newQuestionID + "U" + userID + image.getOriginalFilename().substring(image.getOriginalFilename().length() - 4));
             Files.write(filePath, image.getBytes());
 
@@ -174,7 +174,6 @@ public class QuestionRepository implements QuestionInterface {
     }
 
     public int deleteQuestion(String username, Long questionID) {
-        //check if the user is the author of the question
         final String selectSql = "SELECT author FROM question WHERE id = ?";
         String author = jdbcTemplate.queryForObject(selectSql, String.class, questionID);
 
@@ -225,15 +224,11 @@ public class QuestionRepository implements QuestionInterface {
                     return 0;
                 }
 
-                //get user id
                 final String selectUserSql = "SELECT id FROM user WHERE username = ?";
                 int userID = jdbcTemplate.queryForObject(selectUserSql, Integer.class, author);
 
                 String uploadDir = "./images";
 
-                Path dirPath = Paths.get(uploadDir);
-
-                // Save the file to the specified directory
                 Path filePath = Paths.get(uploadDir, "Q" + question.getId() + "U" + userID + image.getOriginalFilename().substring(image.getOriginalFilename().length() - 4));
                 Files.write(filePath, image.getBytes());
 
@@ -252,7 +247,6 @@ public class QuestionRepository implements QuestionInterface {
                     tags = question.getTags();
                 }
 
-                //delete old tags
                 final String deleteQuestionTagJoinSql = "DELETE FROM question_tag_join WHERE question_id = ?";
                 jdbcTemplate.update(deleteQuestionTagJoinSql, id);
 
@@ -260,18 +254,13 @@ public class QuestionRepository implements QuestionInterface {
 
                 String[] tagsArray = tags.split(",");
 
-
-                //insert new tags if they don't exist
-
             for (String tag : tagsArray) {
                 tag = tag.toLowerCase();
                 final String insertTagSql = "INSERT INTO tag (name) VALUES (?) ON DUPLICATE KEY UPDATE name=name";
-                //create prepared statement and execute
                 jdbcTemplate.update(insertTagSql, tag);
             }
 
             for (String tag : tagsArray) {
-                //for each tag find the tag id
                 tag = tag.toLowerCase();
                 final String selectTagSql = "SELECT id FROM tag WHERE name = ?";
                 int tagID = jdbcTemplate.queryForObject(selectTagSql, Integer.class, tag);
@@ -291,4 +280,71 @@ public class QuestionRepository implements QuestionInterface {
         }
         return 0;
     }
+
+    public Object searchQuestions(String title, String text, String author, String tags) {
+        final String selectSql = "SELECT q.*, GROUP_CONCAT(t.name SEPARATOR ', ') AS tagNames " +
+                "FROM question q " +
+                "LEFT JOIN question_tag_join qt ON q.id = qt.question_id " +
+                "LEFT JOIN tag t ON qt.tag_id = t.id ";
+
+        StringBuilder whereClause = null;
+
+        int first = 0;
+
+        if (title != null) {
+            whereClause = new StringBuilder("WHERE ");
+            whereClause.append("q.title LIKE '%").append(title).append("%' ");
+            first = 1;
+        }
+        if (text != null) {
+            if (first == 1) {
+                whereClause.append("AND ");
+            }
+            else {
+                whereClause = new StringBuilder("WHERE ");
+            }
+            whereClause.append("q.text LIKE '%").append(text).append("%' ");
+            first = 1;
+        }
+        if (author != null) {
+            if (first == 1) {
+                whereClause.append("AND ");
+            }
+            else {
+                whereClause = new StringBuilder("WHERE ");
+            }
+            whereClause.append("q.author = '").append(author).append("' ");
+        }
+
+        if(first == 0) {
+            whereClause = new StringBuilder("");
+        }
+
+        List<Question> questions = jdbcTemplate.query(selectSql + whereClause + "GROUP BY q.id ORDER BY q.creationTime DESC", (rs, rowNum) -> {
+            return new Question(
+                    rs.getLong("id"),
+                    rs.getString("author"),
+                    rs.getString("title"),
+                    rs.getString("text"),
+                    rs.getTimestamp("creationTime").toLocalDateTime(),
+                    rs.getString("picturePath"),
+                    rs.getString("tagNames"));
+        });
+
+
+        if (tags != null) {
+            String[] tagsArray = tags.split(",");
+            questions.removeIf(question -> {
+                for (String tag : tagsArray) {
+                    if (!question.getTags().contains(tag)) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
+
+        return questions;
+    }
+
 }

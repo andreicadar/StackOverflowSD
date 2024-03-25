@@ -125,12 +125,21 @@ public class QuestionRepository implements QuestionInterface {
     }
 
     public int deleteQuestion(String username, Long questionID) {
-        final String selectSql = "SELECT userID FROM question WHERE id = ?";
-        int userID = jdbcTemplate.queryForObject(selectSql, Integer.class, questionID);
+        int userID;
+
+
+            final String selectSql = "SELECT userID FROM question WHERE id = ?";
+            try {
+                userID = jdbcTemplate.queryForObject(selectSql, Integer.class, questionID);
+            }
+            catch (Exception e) {
+                return 2;
+            }
 
         //get username from username
         final String selectUserSql = "SELECT username FROM user WHERE id = ?";
         String author = jdbcTemplate.queryForObject(selectUserSql, String.class, userID);
+
 
         if (author.equals(username)) {
             String deleteQuestionTagJoinSql = "DELETE FROM question_tag_join WHERE question_id = ?";
@@ -375,7 +384,7 @@ public class QuestionRepository implements QuestionInterface {
         return 1;
     }
 
-    public QuestionAnswers getQuestionDetails(int questionID) {
+    public QuestionAnswers getQuestionDetails(Long questionID) {
         final String selectSql = "SELECT q.*, GROUP_CONCAT(t.name SEPARATOR ', ') AS tagNames, u.username " +
                 "FROM question q " +
                 "LEFT JOIN question_tag_join qt ON q.id = qt.question_id " +

@@ -1,9 +1,7 @@
 package org.example.stackoverflowsd;
 
 import org.example.stackoverflowsd.controller.UserController;
-import org.example.stackoverflowsd.model.AuthRequest;
-import org.example.stackoverflowsd.model.Question;
-import org.example.stackoverflowsd.model.User;
+import org.example.stackoverflowsd.model.*;
 import org.example.stackoverflowsd.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -304,9 +302,280 @@ class StackOverflowSdApplicationTests {
 		assertEquals("aaa, bbb, ccc", question.getTags());
 
 		ResponseEntity<String> response7 = userController.deleteQuestion(token, user.getUsername(), question.getId());
-		assertEquals(200, response6.getStatusCodeValue());
+		assertEquals(200, response7.getStatusCodeValue());
 		ResponseEntity<String> response4 = userController.deleteUser(token, user.getUsername());
+		assertEquals(200, response4.getStatusCodeValue());
+
+	}
+
+	@Test
+	void getQuestionByID()
+	{
+		//test post question
+		//login and get a token
+		insertUserWithoutAssert("test3");
+
+		User user = new User();
+		user.setUsername("test3");
+		user.setPassword("test");
+		String token = getUserToken(user.getUsername(), user.getPassword());
+
+		//open multipart file from location on PC
+		String filePath = ".\\images\\A4U3.jpg";
+		MultipartFile image = null;
+		try {
+			image = convert(filePath);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		//post question
+		ResponseEntity<String> response5 = userController.postQuestion(token, image, "test3", "test", "test", "aaa,bbb");
+		assertEquals(200, response5.getStatusCodeValue());
+
+		ResponseEntity<List<Question>> response = (ResponseEntity<List<Question>>) userController.getQuestionsOfUser(token, user.getUsername());
+		Question question = null;
+		if (response != null && response.getBody() != null && !response.getBody().isEmpty())
+			question = response.getBody().get(0); // Use .get(0) for Lists
+		assertNotNull("Question is not null", question);
+
+		ResponseEntity<String> response8 = (ResponseEntity<String>) userController.getQuestionByID(token, user.getUsername(), question.getId());
+		assertEquals(200, response8.getStatusCodeValue());
+
+		ResponseEntity<String> response7 = userController.deleteQuestion(token, user.getUsername(), question.getId());
+		assertEquals(200, response7.getStatusCodeValue());
+		ResponseEntity<String> response4 = userController.deleteUser(token, user.getUsername());
+		assertEquals(200, response4.getStatusCodeValue());
+	}
+
+	@Test
+	void insertAnswer()
+	{
+		//test post question
+		//login and get a token
+		insertUserWithoutAssert("test3");
+
+		User user = new User();
+		user.setUsername("test3");
+		user.setPassword("test");
+		String token = getUserToken(user.getUsername(), user.getPassword());
+
+		//open multipart file from location on PC
+		String filePath = ".\\images\\A4U3.jpg";
+		MultipartFile image = null;
+		try {
+			image = convert(filePath);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		//post question
+		ResponseEntity<String> response5 = userController.postQuestion(token, image, "test3", "test", "test", "aaa,bbb");
+		assertEquals(200, response5.getStatusCodeValue());
+
+		ResponseEntity<List<Question>> response = (ResponseEntity<List<Question>>) userController.getQuestionsOfUser(token, user.getUsername());
+		Question question = null;
+		if (response != null && response.getBody() != null && !response.getBody().isEmpty())
+			question = response.getBody().get(0); // Use .get(0) for Lists
+		assertNotNull("Question is not null", question);
+
+		//open multipart file from location on PC
+		String filePath2 = ".\\images\\A4U3.jpg";
+		MultipartFile image2 = null;
+		try {
+			image2 = convert(filePath2);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+
+		ResponseEntity<String> response6 = userController.answerQuestion(token, image2, "test3", "testAnswer", question.getId());
 		assertEquals(200, response6.getStatusCodeValue());
 
+		ResponseEntity<QuestionAnswers> questionAnswer = (ResponseEntity<QuestionAnswers>) userController.getQuestionDetails(token, user.getUsername(), question.getId());
+
+		ResponseEntity<String> response8 = userController.deleteAnswer(token, user.getUsername(), questionAnswer.getBody().getAnswers().get(0).getId());
+
+		assertEquals(200, response8.getStatusCodeValue());
+		ResponseEntity<String> response7 = userController.deleteQuestion(token, user.getUsername(), question.getId());
+		assertEquals(200, response7.getStatusCodeValue());
+		ResponseEntity<String> response4 = userController.deleteUser(token, user.getUsername());
+		assertEquals(200, response4.getStatusCodeValue());
+	}
+
+	@Test
+	void getAnswerByID() {
+		//test post question
+		//login and get a token
+		insertUserWithoutAssert("test3");
+
+		User user = new User();
+		user.setUsername("test3");
+		user.setPassword("test");
+		String token = getUserToken(user.getUsername(), user.getPassword());
+
+		//open multipart file from location on PC
+		String filePath = ".\\images\\A4U3.jpg";
+		MultipartFile image = null;
+		try {
+			image = convert(filePath);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		//post question
+		ResponseEntity<String> response5 = userController.postQuestion(token, image, "test3", "test", "test", "aaa,bbb");
+		assertEquals(200, response5.getStatusCodeValue());
+
+		ResponseEntity<List<Question>> response = (ResponseEntity<List<Question>>) userController.getQuestionsOfUser(token, user.getUsername());
+		Question question = null;
+		if (response != null && response.getBody() != null && !response.getBody().isEmpty())
+			question = response.getBody().get(0); // Use .get(0) for Lists
+		assertNotNull("Question is not null", question);
+
+		//open multipart file from location on PC
+		String filePath2 = ".\\images\\A4U3.jpg";
+		MultipartFile image2 = null;
+		try {
+			image2 = convert(filePath2);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		ResponseEntity<String> response6 = userController.answerQuestion(token, image2, "test3", "testAnswer", question.getId());
+		assertEquals(200, response6.getStatusCodeValue());
+
+		ResponseEntity<QuestionAnswers> questionAnswer = (ResponseEntity<QuestionAnswers>) userController.getQuestionDetails(token, user.getUsername(), question.getId());
+
+
+		ResponseEntity<String> response9 = (ResponseEntity<String>) userController.getAnswerByID(token, user.getUsername(), questionAnswer.getBody().getAnswers().get(0).getId());
+		assertEquals(200, response9.getStatusCodeValue());
+
+		ResponseEntity<String> response8 = userController.deleteAnswer(token, user.getUsername(), questionAnswer.getBody().getAnswers().get(0).getId());
+		assertEquals(200, response8.getStatusCodeValue());
+		ResponseEntity<String> response7 = userController.deleteQuestion(token, user.getUsername(), question.getId());
+		assertEquals(200, response7.getStatusCodeValue());
+		ResponseEntity<String> response4 = userController.deleteUser(token, user.getUsername());
+		assertEquals(200, response4.getStatusCodeValue());
+
+	}
+
+	@Test
+	void deleteAnswer()
+	{
+		//test post question
+		//login and get a token
+		insertUserWithoutAssert("test3");
+
+		User user = new User();
+		user.setUsername("test3");
+		user.setPassword("test");
+		String token = getUserToken(user.getUsername(), user.getPassword());
+
+		//open multipart file from location on PC
+		String filePath = ".\\images\\A4U3.jpg";
+		MultipartFile image = null;
+		try {
+			image = convert(filePath);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		//post question
+		ResponseEntity<String> response5 = userController.postQuestion(token, image, "test3", "test", "test", "aaa,bbb");
+		assertEquals(200, response5.getStatusCodeValue());
+
+		ResponseEntity<List<Question>> response = (ResponseEntity<List<Question>>) userController.getQuestionsOfUser(token, user.getUsername());
+		Question question = null;
+		if (response != null && response.getBody() != null && !response.getBody().isEmpty())
+			question = response.getBody().get(0); // Use .get(0) for Lists
+		assertNotNull("Question is not null", question);
+
+		//open multipart file from location on PC
+		String filePath2 = ".\\images\\A4U3.jpg";
+		MultipartFile image2 = null;
+		try {
+			image2 = convert(filePath2);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		ResponseEntity<String> response6 = userController.answerQuestion(token, image2, "test3", "testAnswer", question.getId());
+		assertEquals(200, response6.getStatusCodeValue());
+
+		ResponseEntity<QuestionAnswers> questionAnswer = (ResponseEntity<QuestionAnswers>) userController.getQuestionDetails(token, user.getUsername(), question.getId());
+
+		ResponseEntity<String> response8 = userController.deleteAnswer(token, user.getUsername(), questionAnswer.getBody().getAnswers().get(0).getId());
+		assertEquals(200, response8.getStatusCodeValue());
+
+		ResponseEntity<String> response9 = (ResponseEntity<String>) userController.getAnswerByID(token, user.getUsername(), questionAnswer.getBody().getAnswers().get(0).getId());
+		assertEquals(400, response9.getStatusCodeValue());
+		assertEquals("Answer not found", response9.getBody());
+
+
+		ResponseEntity<String> response7 = userController.deleteQuestion(token, user.getUsername(), question.getId());
+		assertEquals(200, response7.getStatusCodeValue());
+		ResponseEntity<String> response4 = userController.deleteUser(token, user.getUsername());
+		assertEquals(200, response4.getStatusCodeValue());
+	}
+
+	@Test
+	void updateAnswer() throws IOException {
+		//test post question
+		//login and get a token
+		insertUserWithoutAssert("test3");
+
+		User user = new User();
+		user.setUsername("test3");
+		user.setPassword("test");
+		String token = getUserToken(user.getUsername(), user.getPassword());
+
+		//open multipart file from location on PC
+		String filePath = ".\\images\\A4U3.jpg";
+		MultipartFile image = null;
+		try {
+			image = convert(filePath);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		//post question
+		ResponseEntity<String> response5 = userController.postQuestion(token, image, "test3", "test", "test", "aaa,bbb");
+		assertEquals(200, response5.getStatusCodeValue());
+
+		ResponseEntity<List<Question>> response = (ResponseEntity<List<Question>>) userController.getQuestionsOfUser(token, user.getUsername());
+		Question question = null;
+		if (response != null && response.getBody() != null && !response.getBody().isEmpty())
+			question = response.getBody().get(0); // Use .get(0) for Lists
+		assertNotNull("Question is not null", question);
+
+		//open multipart file from location on PC
+		String filePath2 = ".\\images\\A4U3.jpg";
+		MultipartFile image2 = null;
+		try {
+			image2 = convert(filePath2);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		ResponseEntity<String> response6 = userController.answerQuestion(token, image2, "test3", "testAnswer", question.getId());
+		assertEquals(200, response6.getStatusCodeValue());
+
+		ResponseEntity<QuestionAnswers> questionAnswer = (ResponseEntity<QuestionAnswers>) userController.getQuestionDetails(token, user.getUsername(), question.getId());
+
+		ResponseEntity<String> response10 = userController.updateAnswer(token, user.getUsername(), questionAnswer.getBody().getAnswers().get(0).getId(), "testAnswer2", image);
+		assertEquals(200, response10.getStatusCodeValue());
+
+
+		ResponseEntity<Answer> response11 = (ResponseEntity<Answer>) userController.getAnswerByID(token, user.getUsername(), questionAnswer.getBody().getAnswers().get(0).getId());
+		assertEquals("testAnswer2", response11.getBody().getText());
+
+		ResponseEntity<String> response8 = userController.deleteAnswer(token, user.getUsername(), questionAnswer.getBody().getAnswers().get(0).getId());
+		assertEquals(200, response8.getStatusCodeValue());
+
+		ResponseEntity<String> response7 = userController.deleteQuestion(token, user.getUsername(), question.getId());
+		assertEquals(200, response7.getStatusCodeValue());
+		ResponseEntity<String> response4 = userController.deleteUser(token, user.getUsername());
+		assertEquals(200, response4.getStatusCodeValue());
 	}
 }

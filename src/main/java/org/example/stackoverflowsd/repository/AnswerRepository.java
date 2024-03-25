@@ -86,7 +86,7 @@ public class AnswerRepository implements  AnswerInterface{
     }
 
 
-    public int answerQuestion(Answer answer, MultipartFile image, int questionID) throws IOException {
+    public int answerQuestion(Answer answer, MultipartFile image, Long questionID) throws IOException {
         //check if question exists
         String sql = "SELECT * FROM question WHERE id = ?";
         Question question = jdbcTemplate.queryForObject(sql, new Object[]{questionID}, (rs, rowNum) -> {
@@ -112,7 +112,7 @@ public class AnswerRepository implements  AnswerInterface{
                 PreparedStatement ps = connection.prepareStatement(insertSql, new String[]{"id"});
                 ps.setInt(1, authorID);
                 ps.setString(2, answer.getText());
-                ps.setInt(3, questionID);
+                ps.setLong(3, questionID);
                 return ps;
             }, keyHolder);
 
@@ -143,28 +143,43 @@ public class AnswerRepository implements  AnswerInterface{
 
     public int deleteAnswer(String username, Long answerID) {
         //check if answer exists
-        String sql = "SELECT * FROM answer WHERE id = ?";
-        Answer answer = jdbcTemplate.queryForObject(sql, new Object[]{answerID}, (rs, rowNum) -> {
-            Answer a = new Answer();
-            a.setId((long) rs.getInt("id"));
-            return a;
-        });
-
-        if(answer == null) {
-            return 0;
-        }
-
-        sql = "SELECT id FROM user WHERE username = ?";
-        int authorID = jdbcTemplate.queryForObject(sql, new Object[]{username}, Integer.class);
-
-        if(authorID != answer.getUserID()) {
-            return 0;
-
-        }
-
-        String deleteVotesSql = "DELETE FROM user_answer_vote WHERE answerID = ?";
         try {
+
+            System.out.println(1);
+            String sql = "SELECT * FROM answer WHERE id = ?";
+            Answer answer = jdbcTemplate.queryForObject(sql, new Object[]{answerID}, (rs, rowNum) -> {
+                Answer a = new Answer();
+                a.setId((long) rs.getInt("id"));
+                a.setUserID(rs.getInt("userID"));
+                return a;
+            });
+            System.out.println(2);
+            if (answer == null) {
+                return 2;
+            }
+
+            sql = "SELECT id FROM user WHERE username = ?";
+            int authorID = jdbcTemplate.queryForObject(sql, new Object[]{username}, Integer.class);
+            System.out.println(3);
+            System.out.println(authorID);
+            System.out.println(answer.getUserID());
+            if (authorID != answer.getUserID()) {
+                return 0;
+
+            }
+            System.out.println(4);
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return 0;
+        }
+        System.out.println(5);
+        try {
+            String deleteVotesSql = "DELETE FROM user_answer_vote WHERE answerID = ?";
             jdbcTemplate.update(deleteVotesSql, answerID);
+            System.out.println(6);
         } catch (DataAccessException e) {
             e.printStackTrace();
             return 0;
@@ -173,11 +188,13 @@ public class AnswerRepository implements  AnswerInterface{
         final String selectPicturePathSql = "SELECT picturePath FROM answer WHERE id = ?";
         String picturePath = jdbcTemplate.queryForObject(selectPicturePathSql, String.class, answerID);
         Path filePath = Paths.get(picturePath);
+        System.out.println(7);
         try {
             Files.delete(filePath);
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println(8);
 
         String deleteSql = "DELETE FROM answer WHERE id = ?";
         try {
@@ -267,7 +284,7 @@ public class AnswerRepository implements  AnswerInterface{
 
     }
 
-    public Answer getAnswerById(int answerID) {
+    public Answer getAnswerById(Long answerID) {
         try {
 
             final String selectSql = "SELECT * FROM answer WHERE id = ?";
@@ -291,7 +308,7 @@ public class AnswerRepository implements  AnswerInterface{
         }
     }
 
-    public int updateAnswer(String username, int answerID, String text, MultipartFile image) {
+    public int updateAnswer(String username, Long answerID, String text, MultipartFile image) {
         //check if answer exists
         String sql = "SELECT * FROM answer WHERE id = ?";
         Answer answer = jdbcTemplate.queryForObject(sql, new Object[]{answerID}, (rs, rowNum) -> {

@@ -187,7 +187,9 @@ public class UserController {
             if(userService.deleteQuestion(username, questionID) == 1) {
                 return ResponseEntity.ok("Question deleted successfully");
             }
-            else {
+            else if(userService.deleteQuestion(username, questionID) == 2) {
+                return ResponseEntity.badRequest().body("Question not found");
+            } else {
                 return ResponseEntity.badRequest().build();
             }
         }
@@ -275,7 +277,7 @@ public class UserController {
     }
 
     @GetMapping("/getQuestionDetails")
-    public ResponseEntity<?> getQuestionDetails(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int questionID) {
+    public ResponseEntity<?> getQuestionDetails(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam Long questionID) {
         if(checkIfUserMatchesToken(token, username) == 1) {
             if(userService.getQuestionDetails(questionID) != null) {
                 return ResponseEntity.ok().body(userService.getQuestionDetails(questionID));
@@ -293,7 +295,7 @@ public class UserController {
     @PostMapping("/answerQuestion")
     public ResponseEntity<String> answerQuestion(@RequestHeader("Authorization") String token, @RequestParam MultipartFile image,
                                                  @RequestParam String author, @RequestParam String text,
-                                                 @RequestParam int questionID) {
+                                                 @RequestParam Long questionID) {
 
         try {
             Answer answer = new Answer(author, text);
@@ -312,7 +314,7 @@ public class UserController {
     }
 
     @GetMapping("/getAnswerByID")
-    public ResponseEntity<?> getAnswerByID(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int answerID) {
+    public ResponseEntity<?> getAnswerByID(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam Long answerID) {
         if(checkIfUserMatchesToken(token, username) == 1) {
             if(userService.getAnswerByID(answerID) != null) {
                 return ResponseEntity.ok().body(userService.getAnswerByID(answerID));
@@ -332,7 +334,9 @@ public class UserController {
             if(userService.deleteAnswer(username, answerID) == 1) {
                 return ResponseEntity.ok("Answer deleted successfully");
             }
-            else {
+            else if(userService.deleteAnswer(username, answerID) == 2) {
+                return ResponseEntity.badRequest().body("Answer not found");
+            }else{
                 return ResponseEntity.badRequest().build();
             }
         }
@@ -378,7 +382,7 @@ public class UserController {
     }
 
     @PostMapping("/updateAnswer")
-    public ResponseEntity<String> updateAnswer(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int answerID, @RequestParam(required = false) String text,
+    public ResponseEntity<String> updateAnswer(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam Long answerID, @RequestParam(required = false) String text,
                                                @RequestParam(required = false) MultipartFile image) throws IOException {
         if(checkIfUserMatchesToken(token, username) == 1) {
             if(userService.updateAnswer(username, answerID, text, image) == 1) {

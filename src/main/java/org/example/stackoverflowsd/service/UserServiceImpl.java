@@ -91,15 +91,16 @@ public class UserServiceImpl implements UserDetailsService {
         return questionRepository.voteQuestion(username, questionID, -1);
     }
 
-    public int answerQuestion(Answer answer, MultipartFile image, int questionID) throws IOException {
+    public int answerQuestion(Answer answer, MultipartFile image, Long questionID) throws IOException {
         return answerRepository.answerQuestion(answer, image, questionID);
     }
 
-    public QuestionAnswers getQuestionDetails(int questionID) {
+    public QuestionAnswers getQuestionDetails(Long questionID) {
         return questionRepository.getQuestionDetails(questionID);
     }
 
     public int deleteAnswer(String username, Long answerID) {
+        System.out.println(answerID);
         return answerRepository.deleteAnswer(username, answerID);
     }
 
@@ -132,11 +133,11 @@ public class UserServiceImpl implements UserDetailsService {
         return questionRepository.getQuestionById(questionID);
     }
 
-    public Answer getAnswerByID(int answerID) {
+    public Answer getAnswerByID(Long answerID) {
         return answerRepository.getAnswerById(answerID);
     }
 
-    public int updateAnswer(String username, int answerID, String text, MultipartFile image) {
+    public int updateAnswer(String username, Long answerID, String text, MultipartFile image) {
         return answerRepository.updateAnswer(username, answerID, text, image);
     }
 }

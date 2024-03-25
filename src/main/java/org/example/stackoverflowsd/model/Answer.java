@@ -29,6 +29,9 @@ public class Answer {
     @Column(name = "picturePath")
     private String picturePath;
 
+    @Column(name = "questionID")
+    private int questionID;
+
     private String author;
 
     public void setAuthor(String author) {
@@ -88,6 +91,14 @@ public class Answer {
         return picturePath;
     }
 
+    public void setQuestionID(int questionID) {
+        this.questionID = questionID;
+    }
+
+    public int getQuestionID() {
+        return questionID;
+    }
+
     public Answer() {
 
     }
@@ -105,5 +116,17 @@ public class Answer {
         this.picturePath = picturePath;
         this.score = score;
     }
+
+    public Answer(long id, int userID, String text, LocalDateTime creationTime, String picturePath, int score, int questionID) {
+        this.id = id;
+        this.userID = userID;
+        this.text = text;
+        this.creationTime = creationTime;
+        this.picturePath = picturePath;
+        this.score = score;
+        this.questionID = questionID;
+    }
+
+
 
 }

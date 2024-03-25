@@ -488,4 +488,37 @@ public class QuestionRepository implements QuestionInterface {
     }
 
 
+    public Question getQuestionById(int questionID) {
+        try {
+
+
+            final String selectSql = "SELECT q.*, GROUP_CONCAT(t.name SEPARATOR ', ') AS tagNames " +
+                    "FROM question q " +
+                    "LEFT JOIN question_tag_join qt ON q.id = qt.question_id " +
+                    "LEFT JOIN tag t ON qt.tag_id = t.id " +
+                    "WHERE q.id = ? " +
+                    "GROUP BY q.id";
+
+            Question question = jdbcTemplate.queryForObject(selectSql, new Object[]{questionID}, (rs, rowNum) -> {
+                return new Question(
+                        rs.getLong("id"),
+                        rs.getInt("userID"),
+                        rs.getString("title"),
+                        rs.getString("text"),
+                        rs.getTimestamp("creationTime").toLocalDateTime(),
+                        rs.getString("picturePath"),
+                        rs.getString("tagNames"),
+                        rs.getInt("score"));
+            });
+
+            final String selectSql2 = "SELECT username FROM user WHERE id = ?";
+            String author = jdbcTemplate.queryForObject(selectSql2, String.class, question.getUserID());
+            question.setAuthor(author);
+
+
+            return question;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

@@ -193,6 +193,21 @@ public class UserController {
         }
     }
 
+    @GetMapping("/getQuestionByID")
+    public ResponseEntity<?> getQuestionByID(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int questionID) {
+        if(checkIfUserMatchesToken(token, username) == 1) {
+            if(userService.getQuestionById(questionID) != null) {
+                return ResponseEntity.ok().body(userService.getQuestionById(questionID));
+            }
+            else {
+                return ResponseEntity.badRequest().body("Question not found");
+            }
+        }
+        else {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
     @GetMapping("/searchQuestions")
     public ResponseEntity<?> searchQuestions(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam(required = false) String title, @RequestParam(required = false) String text, @RequestParam(required = false) String author, @RequestParam(required = false) String tags) {
         if(checkIfUserMatchesToken(token, username) == 1) {
@@ -276,6 +291,21 @@ public class UserController {
         }
     }
 
+    @GetMapping("/getAnswerByID")
+    public ResponseEntity<?> getAnswerByID(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int answerID) {
+        if(checkIfUserMatchesToken(token, username) == 1) {
+            if(userService.getAnswerByID(answerID) != null) {
+                return ResponseEntity.ok().body(userService.getAnswerByID(answerID));
+            }
+            else {
+                return ResponseEntity.badRequest().body("Answer not found");
+            }
+        }
+        else {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
     @PostMapping("/deleteAnswer")
     public ResponseEntity<String> deleteAnswer(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam Long answerID) {
         if(checkIfUserMatchesToken(token, username) == 1) {
@@ -327,5 +357,20 @@ public class UserController {
         }
     }
 
+    @PostMapping("/updateAnswer")
+    public ResponseEntity<String> updateAnswer(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int answerID, @RequestParam(required = false) String text,
+                                               @RequestParam(required = false) MultipartFile image) throws IOException {
+        if(checkIfUserMatchesToken(token, username) == 1) {
+            if(userService.updateAnswer(username, answerID, text, image) == 1) {
+                return ResponseEntity.ok("Answer updated successfully");
+            }
+            else {
+                return ResponseEntity.badRequest().build();
+            }
+        }
+        else {
+            return ResponseEntity.status(401).build();
+        }
+    }
 
 }

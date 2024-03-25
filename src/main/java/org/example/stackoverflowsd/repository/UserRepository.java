@@ -120,10 +120,7 @@ public class UserRepository implements UserInterface {
 
     public User getUserByID(String username, int id) {
         try {
-
-
             String sql = "SELECT * FROM user WHERE id = ?";
-            //save user details in user object
             User user = jdbcTemplate.queryForObject(sql, new Object[]{id}, (rs, rowNum) -> {
                 User u = new User();
                 u.setId((long) rs.getInt("id"));

@@ -123,4 +123,16 @@ public class UserServiceImpl implements UserDetailsService {
     public User getUserByID(String username, int id) {
         return userRepository.getUserByID(username, id);
     }
+
+    public Question getQuestionById(int questionID) {
+        return questionRepository.getQuestionById(questionID);
+    }
+
+    public Answer getAnswerByID(int answerID) {
+        return answerRepository.getAnswerById(answerID);
+    }
+
+    public int updateAnswer(String username, int answerID, String text, MultipartFile image) {
+        return answerRepository.updateAnswer(username, answerID, text, image);
+    }
 }

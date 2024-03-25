@@ -266,6 +266,86 @@ public class AnswerRepository implements  AnswerInterface{
         return 1;
 
     }
+
+    public Answer getAnswerById(int answerID) {
+        try {
+
+            final String selectSql = "SELECT * FROM answer WHERE id = ?";
+            Answer answer = jdbcTemplate.queryForObject(selectSql, new Object[]{answerID}, (rs, rowNum) -> {
+                Answer a = new Answer();
+                a.setId((long) rs.getInt("id"));
+                a.setUserID(rs.getInt("userID"));
+                a.setText(rs.getString("text"));
+                a.setScore(rs.getInt("score"));
+                a.setCreationTime(rs.getTimestamp("creationTime").toLocalDateTime());
+                a.setPicturePath(rs.getString("picturePath"));
+                a.setQuestionID(rs.getInt("questionID"));
+                return a;
+            });
+            answer.setAuthor(jdbcTemplate.queryForObject("SELECT username FROM user WHERE id = ?", String.class, answer.getUserID()));
+            return answer;
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+    }
+
+    public int updateAnswer(String username, int answerID, String text, MultipartFile image) {
+        //check if answer exists
+        String sql = "SELECT * FROM answer WHERE id = ?";
+        Answer answer = jdbcTemplate.queryForObject(sql, new Object[]{answerID}, (rs, rowNum) -> {
+            Answer a = new Answer();
+            a.setId((long) rs.getInt("id"));
+            a.setUserID(rs.getInt("userID"));
+            return a;
+        });
+
+        if(answer == null) {
+            return 0;
+        }
+
+        sql = "SELECT id FROM user WHERE username = ?";
+        int usernameID = jdbcTemplate.queryForObject(sql, new Object[]{username}, Integer.class);
+
+        if(usernameID != answer.getUserID()) {
+            return 0;
+        }
+
+        if(text == null)
+        {
+            text = answer.getText();
+        }
+
+        final String updateTextSql = "UPDATE answer SET text = ? WHERE id = ?";
+        jdbcTemplate.update(updateTextSql, text, answerID);
+
+        if(image != null) {
+            String uploadDir = "./images";
+
+            Path dirPath = Paths.get(uploadDir);
+            if (!Files.exists(dirPath)) {
+                try {
+                    Files.createDirectories(dirPath);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            Path filePath = Paths.get(uploadDir, "A" + answerID + "U" + usernameID + image.getOriginalFilename().substring(image.getOriginalFilename().length() - 4));
+            try {
+                Files.write(filePath, image.getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+                return 0;
+            }
+
+            final String updatePicturePathSql = "UPDATE answer SET picturePath = ? WHERE id = ?";
+            jdbcTemplate.update(updatePicturePathSql, filePath.toString(), answerID);
+        }
+
+        return 1;
+    }
 }
 
 

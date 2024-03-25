@@ -106,6 +106,26 @@ public class UserController {
 
     }
 
+    @GetMapping("/getUserByUsername")
+    public ResponseEntity<?> getUserByUsername(@RequestHeader("Authorization") String token, @RequestParam String username) {
+
+        String tokenUsername = jwtService.extractUsername(token.substring(7));
+        if(tokenUsername.equals(username))
+        {
+            User user = userService.getUserByUsername(username);
+            if(user != null) {
+                return ResponseEntity.ok().body(user);
+            }
+            else {
+                return ResponseEntity.status(401).build();
+            }
+        }
+        else {
+            return ResponseEntity.status(401).build();
+        }
+
+    }
+
     @PostMapping("/login")
     public String authenticateAndGetToken(@RequestBody AuthRequest authRequest) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
@@ -177,7 +197,7 @@ public class UserController {
     }
 
     @PostMapping("/updateQuestion")
-    public ResponseEntity<String> updateQuestion(@RequestHeader("Authorization") String token, @RequestParam String author, @RequestParam int id, @RequestParam(required = false) String title, @RequestParam(required = false) String text,
+    public ResponseEntity<String> updateQuestion(@RequestHeader("Authorization") String token, @RequestParam String author, @RequestParam Long id, @RequestParam(required = false) String title, @RequestParam(required = false) String text,
                                                  @RequestParam(required = false) String tags, @RequestParam(required = false) MultipartFile image) throws IOException {
         if(checkIfUserMatchesToken(token, author) == 1) {
 
@@ -194,7 +214,7 @@ public class UserController {
     }
 
     @GetMapping("/getQuestionByID")
-    public ResponseEntity<?> getQuestionByID(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int questionID) {
+    public ResponseEntity<?> getQuestionByID(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam Long questionID) {
         if(checkIfUserMatchesToken(token, username) == 1) {
             if(userService.getQuestionById(questionID) != null) {
                 return ResponseEntity.ok().body(userService.getQuestionById(questionID));

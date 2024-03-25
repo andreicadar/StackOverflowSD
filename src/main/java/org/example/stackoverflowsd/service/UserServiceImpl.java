@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserDetailsService {
         return questionRepository.deleteQuestion(username, questionID);
     }
 
-    public int updateQuestion(String author, int id, String title, String text, String tags, MultipartFile image) throws IOException {
+    public int updateQuestion(String author, Long id, String title, String text, String tags, MultipartFile image) throws IOException {
         return questionRepository.updateQuestion(author, id, title, text, tags, image);
     }
 
@@ -124,7 +124,11 @@ public class UserServiceImpl implements UserDetailsService {
         return userRepository.getUserByID(username, id);
     }
 
-    public Question getQuestionById(int questionID) {
+    public User getUserByUsername(String username) {
+        return userRepository.getUserByUsername(username);
+    }
+
+    public Question getQuestionById(Long questionID) {
         return questionRepository.getQuestionById(questionID);
     }
 

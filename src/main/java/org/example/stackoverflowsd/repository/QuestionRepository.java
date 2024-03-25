@@ -158,7 +158,7 @@ public class QuestionRepository implements QuestionInterface {
         }
     }
 
-    public int updateQuestion(String author, int id, String title, String text, String tags, MultipartFile image) throws IOException {
+    public int updateQuestion(String author, Long id, String title, String text, String tags, MultipartFile image) throws IOException {
 
         try {;
 
@@ -488,7 +488,7 @@ public class QuestionRepository implements QuestionInterface {
     }
 
 
-    public Question getQuestionById(int questionID) {
+    public Question getQuestionById(Long questionID) {
         try {
 
 

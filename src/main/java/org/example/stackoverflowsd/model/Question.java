@@ -4,9 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 
 
 @Entity
@@ -61,7 +58,7 @@ public class Question {
         this.id = id;
     }
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 

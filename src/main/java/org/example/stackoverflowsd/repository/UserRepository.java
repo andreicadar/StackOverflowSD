@@ -145,4 +145,26 @@ public class UserRepository implements UserInterface {
 
 
     }
+
+    public User getUserByUsername(String username) {
+        try {
+            String sql = "SELECT * FROM user WHERE username = ?";
+            User user = jdbcTemplate.queryForObject(sql, new Object[]{username}, (rs, rowNum) -> {
+                User u = new User();
+                u.setId((long) rs.getInt("id"));
+                u.setUsername(rs.getString("username"));
+                u.setEmail(rs.getString("email"));
+                u.setPassword(rs.getString("password"));
+                u.setRole(rs.getString("role"));
+                u.setScore(rs.getFloat("score"));
+                return u;
+            });
+            return user;
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+
+    }
 }

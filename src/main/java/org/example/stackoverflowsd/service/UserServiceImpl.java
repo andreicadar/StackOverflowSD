@@ -3,6 +3,7 @@ package org.example.stackoverflowsd.service;
 import org.example.stackoverflowsd.model.*;
 import org.example.stackoverflowsd.repository.AnswerRepository;
 import org.example.stackoverflowsd.repository.QuestionRepository;
+import org.example.stackoverflowsd.repository.UserInterface;
 import org.example.stackoverflowsd.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,7 +21,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserDetailsService {
 
     @Autowired
-    private UserRepository userRepository;
+    private UserInterface userInterface;
 
     @Autowired
     private QuestionRepository questionRepository;
@@ -29,12 +30,15 @@ public class UserServiceImpl implements UserDetailsService {
     private AnswerRepository answerRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private PasswordEncoder encoder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        Optional<User> userDetail = userRepository.findByUsername(username);
+        Optional<User> userDetail = userInterface.findByUsername(username);
 
         // Converting userDetail to UserDetails
         return userDetail.map(UserInfoDetails::new)
@@ -42,7 +46,7 @@ public class UserServiceImpl implements UserDetailsService {
     }
 
     public int checkIfUserExists(String username) {
-        Optional<User> userDetail = userRepository.findByUsername(username);
+        Optional<User> userDetail = userInterface.findByUsername(username);
         if(userDetail.isPresent()) {
             return 1;
         }
@@ -53,7 +57,7 @@ public class UserServiceImpl implements UserDetailsService {
 
     public String addUser(User userInfo) {
         userInfo.setPassword(encoder.encode(userInfo.getPassword()));
-        userRepository.save(userInfo);
+        userInterface.save(userInfo);
         return "User Added Successfully";
     }
 
@@ -105,5 +109,14 @@ public class UserServiceImpl implements UserDetailsService {
 
     public int downvoteAnswer(String username, int answerID) {
         return answerRepository.voteAnswer(username, answerID, -1);
+    }
+
+    public int deleteUser(String username) {
+        //use already built in crud repository function to delete
+        return userRepository.deleteUserByUsername(username);
+    }
+
+    public int updateUser(String username, String newUsername, String password, String email){
+        return userRepository.updateUser(username, newUsername, password, email);
     }
 }

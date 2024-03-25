@@ -8,6 +8,7 @@ import org.example.stackoverflowsd.model.User;
 import org.example.stackoverflowsd.model.UserInfoDetails;
 import org.example.stackoverflowsd.repository.AnswerRepository;
 import org.example.stackoverflowsd.repository.QuestionRepository;
+import org.example.stackoverflowsd.repository.UserInterface;
 import org.example.stackoverflowsd.repository.UserRepository;
 import org.example.stackoverflowsd.service.UserServiceImpl;
 import org.example.stackoverflowsd.service.UserService;
@@ -19,7 +20,7 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication(scanBasePackages = {"org.example.stackoverflowsd.service"})
 @ComponentScan(basePackageClasses = UserController.class)
 @ComponentScan(basePackageClasses = UserService.class)
-@ComponentScan(basePackageClasses = UserRepository.class)
+@ComponentScan(basePackageClasses = UserInterface.class)
 @ComponentScan(basePackageClasses = User.class)
 @ComponentScan(basePackageClasses = UserInfoDetails.class)
 @ComponentScan(basePackageClasses = UserServiceImpl.class)
@@ -27,6 +28,7 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan(basePackageClasses = JwtAuthFilter.class)
 @ComponentScan(basePackageClasses = QuestionRepository.class)
 @ComponentScan(basePackageClasses = AnswerRepository.class)
+@ComponentScan(basePackageClasses = UserRepository.class)
 
 //@ComponentScan("controller")
 //@ComponentScan("service")

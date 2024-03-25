@@ -64,6 +64,21 @@ public class UserController {
         }
             return ResponseEntity.ok(userService.addUser(userInfo));
     }
+
+    @PostMapping("/updateUser")
+    public ResponseEntity<String> updateUser(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam(required = false) String newUsername, @RequestParam(required = false) String password, @RequestParam(required = false) String email) throws IOException {
+        if(checkIfUserMatchesToken(token, username) == 1) {
+            if(userService.updateUser(username, newUsername, password, email) == 1) {
+                return ResponseEntity.ok("User updated successfully");
+            }
+            else {
+                return ResponseEntity.badRequest().build();
+            }
+        }
+        else {
+            return ResponseEntity.status(401).build();
+        }
+    }
 //
 //    @GetMapping("/user/userProfile")
 //    @PreAuthorize("hasAuthority('ROLE_USER')")
@@ -84,6 +99,21 @@ public class UserController {
             return jwtService.generateToken(authRequest.getUsername());
         } else {
             throw new UsernameNotFoundException("invalid user request !");
+        }
+    }
+
+    @PostMapping("/deleteUser")
+    public ResponseEntity<String> deleteUser(@RequestHeader("Authorization") String token, @RequestParam String username) {
+        if(checkIfUserMatchesToken(token, username) == 1) {
+            if(userService.deleteUser(username) == 1) {
+                return ResponseEntity.ok("User deleted successfully");
+            }
+            else {
+                return ResponseEntity.badRequest().build();
+            }
+        }
+        else {
+            return ResponseEntity.status(401).build();
         }
     }
 

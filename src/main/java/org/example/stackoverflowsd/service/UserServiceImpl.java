@@ -119,4 +119,8 @@ public class UserServiceImpl implements UserDetailsService {
     public int updateUser(String username, String newUsername, String password, String email){
         return userRepository.updateUser(username, newUsername, password, email);
     }
+
+    public User getUserByID(String username, int id) {
+        return userRepository.getUserByID(username, id);
+    }
 }

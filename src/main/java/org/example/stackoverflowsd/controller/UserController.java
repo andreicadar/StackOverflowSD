@@ -92,6 +92,20 @@ public class UserController {
 //        return "Welcome to Admin Profile";
 //    }
 
+    @GetMapping("/getUserByID")
+    public ResponseEntity<?> getUserByID(@RequestHeader("Authorization") String token, @RequestParam int id) {
+
+        String tokenUsername = jwtService.extractUsername(token.substring(7));
+        User user = userService.getUserByID(tokenUsername, id);
+        if(user != null) {
+            return ResponseEntity.ok().body(user);
+        }
+        else {
+            return ResponseEntity.status(401).build();
+        }
+
+    }
+
     @PostMapping("/login")
     public String authenticateAndGetToken(@RequestBody AuthRequest authRequest) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));

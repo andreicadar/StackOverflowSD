@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -114,6 +115,37 @@ public class UserRepository implements UserInterface {
 
         String sqlUpdateQuery = "UPDATE user SET username = ?, password = ?, email = ? WHERE username = ?";
         return jdbcTemplate.update(sqlUpdateQuery, newUsername, password, email, username);
+
+    }
+
+    public User getUserByID(String username, int id) {
+        try {
+
+
+            String sql = "SELECT * FROM user WHERE id = ?";
+            //save user details in user object
+            User user = jdbcTemplate.queryForObject(sql, new Object[]{id}, (rs, rowNum) -> {
+                User u = new User();
+                u.setId((long) rs.getInt("id"));
+                u.setUsername(rs.getString("username"));
+                u.setEmail(rs.getString("email"));
+                u.setPassword(rs.getString("password"));
+                u.setRole(rs.getString("role"));
+                u.setScore(rs.getFloat("score"));
+                return u;
+            });
+            if(username.equals(user.getUsername()))
+            {
+                return user;
+            }
+            return null;
+
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+
 
     }
 }

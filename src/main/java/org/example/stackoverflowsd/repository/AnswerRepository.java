@@ -142,10 +142,7 @@ public class AnswerRepository implements  AnswerInterface{
     }
 
     public int deleteAnswer(String username, Long answerID) {
-        //check if answer exists
         try {
-
-            System.out.println(1);
             String sql = "SELECT * FROM answer WHERE id = ?";
             Answer answer = jdbcTemplate.queryForObject(sql, new Object[]{answerID}, (rs, rowNum) -> {
                 Answer a = new Answer();
@@ -153,21 +150,16 @@ public class AnswerRepository implements  AnswerInterface{
                 a.setUserID(rs.getInt("userID"));
                 return a;
             });
-            System.out.println(2);
             if (answer == null) {
                 return 2;
             }
 
             sql = "SELECT id FROM user WHERE username = ?";
             int authorID = jdbcTemplate.queryForObject(sql, new Object[]{username}, Integer.class);
-            System.out.println(3);
-            System.out.println(authorID);
-            System.out.println(answer.getUserID());
             if (authorID != answer.getUserID()) {
                 return 0;
 
             }
-            System.out.println(4);
 
         }
         catch (Exception e)
@@ -175,11 +167,11 @@ public class AnswerRepository implements  AnswerInterface{
             e.printStackTrace();
             return 0;
         }
-        System.out.println(5);
+
         try {
             String deleteVotesSql = "DELETE FROM user_answer_vote WHERE answerID = ?";
             jdbcTemplate.update(deleteVotesSql, answerID);
-            System.out.println(6);
+
         } catch (DataAccessException e) {
             e.printStackTrace();
             return 0;
@@ -188,13 +180,13 @@ public class AnswerRepository implements  AnswerInterface{
         final String selectPicturePathSql = "SELECT picturePath FROM answer WHERE id = ?";
         String picturePath = jdbcTemplate.queryForObject(selectPicturePathSql, String.class, answerID);
         Path filePath = Paths.get(picturePath);
-        System.out.println(7);
+
         try {
             Files.delete(filePath);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(8);
+
 
         String deleteSql = "DELETE FROM answer WHERE id = ?";
         try {
@@ -270,7 +262,6 @@ public class AnswerRepository implements  AnswerInterface{
                 scoreToAddToAuthor = -2.5f;
                 scoreToAddToUser = -1.5f;
 
-                System.out.println("Am intrat in if-ul de jos");
 
                 final String updateUserScoreSql = "UPDATE user SET score = score + ? WHERE username = ?";
                 jdbcTemplate.update(updateUserScoreSql, scoreToAddToUser, username);

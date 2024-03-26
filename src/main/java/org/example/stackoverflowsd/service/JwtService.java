@@ -4,6 +4,10 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jdk.jfr.Label;
+import org.example.stackoverflowsd.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +21,10 @@ import java.util.function.Function;
 
 @Component
 public class JwtService {
+
+    @Autowired
+    @Lazy
+    private UserRepository userRepository;
 
     public static final String SECRET = "CELMAIMARESUPERSECREET1029382190jnfkddskvmlksdaksdkskd";
     public String generateToken(String userName) {
@@ -66,7 +74,7 @@ public class JwtService {
 
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token) && !userRepository.checkIfUserIsBaned(username));
     }
 
 

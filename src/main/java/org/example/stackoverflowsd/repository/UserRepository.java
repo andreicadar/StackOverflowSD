@@ -167,4 +167,124 @@ public class UserRepository implements UserInterface {
         }
 
     }
+
+    public boolean checkIfUserIsBaned(String username) {
+        try {
+            String sql = "SELECT * FROM user WHERE username = ?";
+            User user = jdbcTemplate.queryForObject(sql, new Object[]{username}, (rs, rowNum) -> {
+                User u = new User();
+                u.setId((long) rs.getInt("id"));
+                u.setUsername(rs.getString("username"));
+                u.setEmail(rs.getString("email"));
+                u.setPassword(rs.getString("password"));
+                u.setRole(rs.getString("role"));
+                u.setScore(rs.getFloat("score"));
+                return u;
+            });
+            if(user.getRole().equals("ROLE_BANED"))
+            {
+                return true;
+            }
+            return false;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public int banUser(String username, String userToBan) {
+        try {
+            String sql = "SELECT * FROM user WHERE username = ?";
+            User user = jdbcTemplate.queryForObject(sql, new Object[]{username}, (rs, rowNum) -> {
+                User u = new User();
+                u.setId((long) rs.getInt("id"));
+                u.setUsername(rs.getString("username"));
+                u.setEmail(rs.getString("email"));
+                u.setPassword(rs.getString("password"));
+                u.setRole(rs.getString("role"));
+                u.setScore(rs.getFloat("score"));
+                return u;
+            });
+
+            User userToBanObject = jdbcTemplate.queryForObject(sql, new Object[]{userToBan}, (rs, rowNum) -> {
+                User u = new User();
+                u.setId((long) rs.getInt("id"));
+                u.setUsername(rs.getString("username"));
+                u.setEmail(rs.getString("email"));
+                u.setPassword(rs.getString("password"));
+                u.setRole(rs.getString("role"));
+                u.setScore(rs.getFloat("score"));
+                return u;
+            });
+            if(!user.getRole().equals("ROLE_MODERATOR"))
+            {
+                return 2;
+            }
+            else if(userToBan.equals(username))
+            {
+                return 3;
+            }
+            else if(userToBanObject.getRole().equals("ROLE_MODERATOR"))
+            {
+                return 4;
+            }
+             
+            String sqlUpdateQuery = "UPDATE user SET role = ? WHERE username = ?";
+            jdbcTemplate.update(sqlUpdateQuery, "ROLE_BANED", userToBan);
+            return 1;
+        }
+        catch (Exception e)
+        {
+            return 0;
+        }
+    }
+
+    public int unbanUser(String username, String userToUnban) {
+        try {
+            String sql = "SELECT * FROM user WHERE username = ?";
+            User user = jdbcTemplate.queryForObject(sql, new Object[]{username}, (rs, rowNum) -> {
+                User u = new User();
+                u.setId((long) rs.getInt("id"));
+                u.setUsername(rs.getString("username"));
+                u.setEmail(rs.getString("email"));
+                u.setPassword(rs.getString("password"));
+                u.setRole(rs.getString("role"));
+                u.setScore(rs.getFloat("score"));
+                return u;
+            });
+
+            User userToBanObject = jdbcTemplate.queryForObject(sql, new Object[]{userToUnban}, (rs, rowNum) -> {
+                User u = new User();
+                u.setId((long) rs.getInt("id"));
+                u.setUsername(rs.getString("username"));
+                u.setEmail(rs.getString("email"));
+                u.setPassword(rs.getString("password"));
+                u.setRole(rs.getString("role"));
+                u.setScore(rs.getFloat("score"));
+                return u;
+            });
+
+            if(!user.getRole().equals("ROLE_MODERATOR"))
+            {
+                return 2;
+            }
+            else if(userToUnban.equals(username))
+            {
+                return 3;
+            }
+            else if(userToBanObject.getRole().equals("ROLE_MODERATOR"))
+            {
+                return 4;
+            }
+            String sqlUpdateQuery = "UPDATE user SET role = ? WHERE username = ?";
+            jdbcTemplate.update(sqlUpdateQuery, "ROLE_USER", userToUnban);
+            return 1;
+        }
+        catch (Exception e)
+        {
+            return 0;
+        }
+    }
 }

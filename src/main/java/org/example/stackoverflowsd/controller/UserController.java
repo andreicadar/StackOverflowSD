@@ -127,12 +127,15 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public String authenticateAndGetToken(@RequestBody AuthRequest authRequest) {
+    public ResponseEntity<String> authenticateAndGetToken(@RequestBody AuthRequest authRequest) {
+        if(userService.checkIfUserIsBaned(authRequest.getUsername())) {
+            return ResponseEntity.status(401).body("You are baned!");
+        }
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-        if (authentication.isAuthenticated()) {
-            return jwtService.generateToken(authRequest.getUsername());
+        if (authentication.isAuthenticated() && !userService.checkIfUserIsBaned(authRequest.getUsername())) {
+            return ResponseEntity.status(200).body(jwtService.generateToken(authRequest.getUsername()));
         } else {
-            throw new UsernameNotFoundException("invalid user request !");
+            return ResponseEntity.status(400).body("Bad credentials");
         }
     }
 
@@ -184,10 +187,11 @@ public class UserController {
     @PostMapping("/deleteQuestion")
     public ResponseEntity<String> deleteQuestion(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam Long questionID) {
         if(checkIfUserMatchesToken(token, username) == 1) {
-            if(userService.deleteQuestion(username, questionID) == 1) {
+            int result = userService.deleteQuestion(username, questionID);
+            if(result == 1) {
                 return ResponseEntity.ok("Question deleted successfully");
             }
-            else if(userService.deleteQuestion(username, questionID) == 2) {
+            else if(result == 2) {
                 return ResponseEntity.badRequest().body("Question not found");
             } else {
                 return ResponseEntity.badRequest().build();
@@ -243,10 +247,11 @@ public class UserController {
     @PostMapping("/upvoteQuestion")
     public ResponseEntity<String> upvoteQuestion(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int questionID) {
         if(checkIfUserMatchesToken(token, username) == 1) {
-            if(userService.upvoteQuestion(username, questionID) == 1) {
+            int result = userService.upvoteQuestion(username, questionID);
+            if(result== 1) {
                 return ResponseEntity.ok("Question upvoted successfully");
             }
-            else if(userService.upvoteQuestion(username, questionID) == 2) {
+            else if(result == 2) {
                 return ResponseEntity.badRequest().body("Question already upvoted");
             }
             else {
@@ -261,10 +266,11 @@ public class UserController {
     @PostMapping("/downvoteQuestion")
     public ResponseEntity<String> downvoteQuestion(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int questionID) {
         if(checkIfUserMatchesToken(token, username) == 1) {
-            if(userService.downvoteQuestion(username, questionID) == 1) {
+            int result = userService.downvoteQuestion(username, questionID);
+            if(result == 1) {
                 return ResponseEntity.ok("Question downvoted successfully");
             }
-            else if(userService.upvoteQuestion(username, questionID) == 2) {
+            else if(result == 2) {
                 return ResponseEntity.badRequest().body("Question already downvoted");
             }
             else {
@@ -331,10 +337,11 @@ public class UserController {
     @PostMapping("/deleteAnswer")
     public ResponseEntity<String> deleteAnswer(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam Long answerID) {
         if(checkIfUserMatchesToken(token, username) == 1) {
-            if(userService.deleteAnswer(username, answerID) == 1) {
+            int result = userService.deleteAnswer(username, answerID);
+            if(result == 1) {
                 return ResponseEntity.ok("Answer deleted successfully");
             }
-            else if(userService.deleteAnswer(username, answerID) == 2) {
+            else if(result == 2) {
                 return ResponseEntity.badRequest().body("Answer not found");
             }else{
                 return ResponseEntity.badRequest().build();
@@ -348,10 +355,11 @@ public class UserController {
     @PostMapping("/upvoteAnswer")
     public ResponseEntity<String> upvoteAnswer(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int answerID) {
         if(checkIfUserMatchesToken(token, username) == 1) {
-            if(userService.upvoteAnswer(username, answerID) == 1) {
+            int result = userService.upvoteAnswer(username, answerID);
+            if(result == 1) {
                 return ResponseEntity.ok("Answer upvoted successfully");
             }
-            else if(userService.upvoteAnswer(username, answerID) == 2) {
+            else if(result == 2) {
                 return ResponseEntity.badRequest().body("Answer already upvoted");
             }
             else {
@@ -366,10 +374,11 @@ public class UserController {
     @PostMapping("/downvoteAnswer")
     public ResponseEntity<String> downvoteAnswer(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int answerID) {
         if(checkIfUserMatchesToken(token, username) == 1) {
-            if(userService.downvoteAnswer(username, answerID) == 1) {
+            int result = userService.downvoteAnswer(username, answerID);
+            if(result == 1) {
                 return ResponseEntity.ok("Answer downvoted successfully");
             }
-            else if(userService.downvoteAnswer(username, answerID) == 2) {
+            else if(result == 2) {
                 return ResponseEntity.badRequest().body("Answer already downvoted");
             }
             else {
@@ -391,6 +400,54 @@ public class UserController {
             else {
                 return ResponseEntity.badRequest().build();
             }
+        }
+        else {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
+    @PostMapping("/banUser")
+    public ResponseEntity<String> banUser(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam String userToBan) {
+        if(checkIfUserMatchesToken(token, username) == 1) {
+            int result = userService.banUser(username, userToBan);
+            if(result == 1) {
+                return ResponseEntity.ok("User banned successfully");
+            }
+            else if(result == 2){
+                return ResponseEntity.status(401).build();
+            }
+            else if(result == 3) {
+                return ResponseEntity.badRequest().body("Cannot ban yourself");
+            }
+            else if(result == 4) {
+                return ResponseEntity.badRequest().build();
+            }
+            else
+                return ResponseEntity.badRequest().body("Cannot ban user");
+        }
+        else {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
+    @PostMapping("/unbanUser")
+    public ResponseEntity<String> unbanUser(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam String userToUnban) {
+        if(checkIfUserMatchesToken(token, username) == 1) {
+            int result = userService.unbanUser(username, userToUnban);
+            if(result == 1) {
+                return ResponseEntity.ok("User unbanned successfully");
+            }
+            else if(result == 2){
+                return ResponseEntity.status(401).build();
+            }
+            else if(result == 3) {
+                return ResponseEntity.badRequest().body("Cannot unban yourself");
+            }
+            else if(result == 4) {
+                return ResponseEntity.badRequest().build();
+            }
+            else
+                return ResponseEntity.badRequest().body("Cannot unban user");
         }
         else {
             return ResponseEntity.status(401).build();

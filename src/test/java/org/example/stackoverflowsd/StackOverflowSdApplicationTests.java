@@ -29,8 +29,7 @@ class StackOverflowSdApplicationTests {
 		User user = new User();
 		user.setUsername(username);
 		user.setPassword(password);
-		String token = userController.authenticateAndGetToken(new AuthRequest(user.getUsername(), user.getPassword()));
-		System.out.println(token);
+		String token = String.valueOf(userController.authenticateAndGetToken(new AuthRequest(user.getUsername(), user.getPassword())).getBody());
 		token = "Bearer " + token;
 		return token;
 
@@ -73,7 +72,7 @@ class StackOverflowSdApplicationTests {
 		try {
 			insertUserWithoutAssert("test");
 		} catch (Exception e) {
-			System.out.println("User already exists");
+			e.printStackTrace();
 		}
 		User user = new User();
 		user.setUsername("test");
@@ -95,7 +94,7 @@ class StackOverflowSdApplicationTests {
 		try {
 			insertUserWithoutAssert("test");
 		} catch (Exception e) {
-			System.out.println("User already exists");
+			e.printStackTrace();
 		}
 
 

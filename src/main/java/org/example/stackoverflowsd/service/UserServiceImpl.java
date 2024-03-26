@@ -140,4 +140,16 @@ public class UserServiceImpl implements UserDetailsService {
     public int updateAnswer(String username, Long answerID, String text, MultipartFile image) {
         return answerRepository.updateAnswer(username, answerID, text, image);
     }
+
+    public int banUser(String username, String userToBan) {
+        return userRepository.banUser(username, userToBan);
+    }
+
+    public boolean checkIfUserIsBaned(String username) {
+        return userRepository.checkIfUserIsBaned(username);
+    }
+
+    public int unbanUser(String username, String userToUnban) {
+        return userRepository.unbanUser(username, userToUnban);
+    }
 }

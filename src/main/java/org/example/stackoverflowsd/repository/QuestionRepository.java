@@ -29,7 +29,6 @@ public class QuestionRepository implements QuestionInterface {
 
 
     public int postQuestion(Question question, MultipartFile image) {
-        //get userID from author
         String sqlQuery = "SELECT id FROM user WHERE username = ?";
         int authorID = jdbcTemplate.queryForObject(sqlQuery, Integer.class, question.getAuthor());
 
@@ -57,7 +56,6 @@ public class QuestionRepository implements QuestionInterface {
                 tag = tag.toLowerCase();
                 tag = tag.replaceAll("^\\s+", "");
                 final String insertTagSql = "INSERT INTO tag (name) VALUES (?) ON DUPLICATE KEY UPDATE name=name";
-                //create prepared statement and execute
                 jdbcTemplate.update(insertTagSql, tag);
             }
 
@@ -136,7 +134,6 @@ public class QuestionRepository implements QuestionInterface {
                 return 2;
             }
 
-        //get username from username
         final String selectUserSql = "SELECT username FROM user WHERE id = ?";
         String author = jdbcTemplate.queryForObject(selectUserSql, String.class, userID);
 
@@ -145,7 +142,6 @@ public class QuestionRepository implements QuestionInterface {
             String deleteQuestionTagJoinSql = "DELETE FROM question_tag_join WHERE question_id = ?";
             jdbcTemplate.update(deleteQuestionTagJoinSql, questionID);
 
-            //delete question votes
             String deleteQuestionVoteSql = "DELETE FROM user_question_vote WHERE questionID = ?";
             jdbcTemplate.update(deleteQuestionVoteSql, questionID);
 
@@ -334,10 +330,8 @@ public class QuestionRepository implements QuestionInterface {
             return 0;
         }
 
-        //get upvote column value
         final String selectSql2 = "SELECT * FROM user_question_vote WHERE questionID = ? AND userID = ?";
 
-        //extract column values
         List<Integer> upvoteList = jdbcTemplate.query(selectSql2, new Object[]{questionID, userID}, (rs, rowNum) -> {
             return rs.getInt("upvote");
         });
@@ -370,7 +364,6 @@ public class QuestionRepository implements QuestionInterface {
             final String updateSql = "UPDATE question SET score = score + ? WHERE id = ?";
             jdbcTemplate.update(updateSql, upvote, questionID);
 
-            //update author score
             float scoreToAdd = 0;
             if(upvote == 1){
                 scoreToAdd = 2.5f;
@@ -393,7 +386,6 @@ public class QuestionRepository implements QuestionInterface {
                 "WHERE q.id = ? " +
                 "GROUP BY q.id";
 
-        //retrieve answers from question in join table
         final String selectSql2 = "SELECT a.*, u.username " +
                 "FROM answer a " +
                 "LEFT JOIN user u ON a.userID = u.id " +

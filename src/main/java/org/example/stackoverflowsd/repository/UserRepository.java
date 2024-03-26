@@ -230,7 +230,7 @@ public class UserRepository implements UserInterface {
             {
                 return 4;
             }
-             
+
             String sqlUpdateQuery = "UPDATE user SET role = ? WHERE username = ?";
             jdbcTemplate.update(sqlUpdateQuery, "ROLE_BANED", userToBan);
             return 1;

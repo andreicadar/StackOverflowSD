@@ -40,7 +40,6 @@ public class UserServiceImpl implements UserDetailsService {
 
         Optional<User> userDetail = userInterface.findByUsername(username);
 
-        // Converting userDetail to UserDetails
         return userDetail.map(UserInfoDetails::new)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found " + username));
     }

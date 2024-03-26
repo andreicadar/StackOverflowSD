@@ -87,7 +87,6 @@ public class AnswerRepository implements  AnswerInterface{
 
 
     public int answerQuestion(Answer answer, MultipartFile image, Long questionID) throws IOException {
-        //check if question exists
         String sql = "SELECT * FROM question WHERE id = ?";
         Question question = jdbcTemplate.queryForObject(sql, new Object[]{questionID}, (rs, rowNum) -> {
             Question q = new Question();
@@ -99,11 +98,9 @@ public class AnswerRepository implements  AnswerInterface{
             return 0;
         }
 
-        //get user if from author
         sql = "SELECT id FROM user WHERE username = ?";
         int authorID = jdbcTemplate.queryForObject(sql, new Object[]{answer.getAuthor()}, Integer.class);
 
-        //insert answer
         String insertSql = "INSERT INTO answer (userID, text, creationTime, questionID) VALUES (?, ?, NOW(), ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         try {
@@ -212,7 +209,6 @@ public class AnswerRepository implements  AnswerInterface{
 
         final String selectSql2 = "SELECT * FROM user_answer_vote WHERE answerID = ? AND userID = ?";
 
-        //extract column values
         List<Integer> upvoteList = jdbcTemplate.query(selectSql2, new Object[]{answerID, userID}, (rs, rowNum) -> {
             return rs.getInt("upvote");
         });
@@ -300,7 +296,6 @@ public class AnswerRepository implements  AnswerInterface{
     }
 
     public int updateAnswer(String username, Long answerID, String text, MultipartFile image) {
-        //check if answer exists
         String sql = "SELECT * FROM answer WHERE id = ?";
         Answer answer = jdbcTemplate.queryForObject(sql, new Object[]{answerID}, (rs, rowNum) -> {
             Answer a = new Answer();

@@ -124,15 +124,13 @@ public class QuestionRepository implements QuestionInterface {
 
     public int deleteQuestion(String username, Long questionID) {
         int userID;
-
-
-            final String selectSql = "SELECT userID FROM question WHERE id = ?";
-            try {
-                userID = jdbcTemplate.queryForObject(selectSql, Integer.class, questionID);
-            }
-            catch (Exception e) {
-                return 2;
-            }
+        final String selectSql = "SELECT userID FROM question WHERE id = ?";
+        try {
+            userID = jdbcTemplate.queryForObject(selectSql, Integer.class, questionID);
+        }
+        catch (Exception e) {
+            return 2;
+        }
 
         final String selectUserSql = "SELECT username FROM user WHERE id = ?";
         String author = jdbcTemplate.queryForObject(selectUserSql, String.class, userID);
@@ -148,11 +146,24 @@ public class QuestionRepository implements QuestionInterface {
             final String selectPicturePathSql = "SELECT picturePath FROM question WHERE id = ?";
             String picturePath = jdbcTemplate.queryForObject(selectPicturePathSql, String.class, questionID);
             Path filePath = Paths.get(picturePath);
+
             try {
                 Files.delete(filePath);
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            final String selectAnswerIDsSql = "SELECT id FROM answer WHERE questionID = ?";
+            List<Integer> answerIDs = jdbcTemplate.queryForList(selectAnswerIDsSql, Integer.class, questionID);
+
+            for (int answerID : answerIDs) {
+                String deleteAnswerVoteSql = "DELETE FROM user_answer_vote WHERE answerID = ?";
+                jdbcTemplate.update(deleteAnswerVoteSql, answerID);
+            }
+
+            String deleteAnswersSql = "DELETE FROM answer WHERE questionID = ?";
+            jdbcTemplate.update(deleteAnswersSql, questionID);
+
 
 
             String deleteSql = "DELETE FROM question WHERE id = ?";

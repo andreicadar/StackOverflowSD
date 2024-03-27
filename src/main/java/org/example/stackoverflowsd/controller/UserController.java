@@ -4,10 +4,12 @@ import org.example.stackoverflowsd.model.Answer;
 import org.example.stackoverflowsd.model.AuthRequest;
 import org.example.stackoverflowsd.model.Question;
 import org.example.stackoverflowsd.model.User;
+import org.example.stackoverflowsd.service.EmailService;
 import org.example.stackoverflowsd.service.JwtService;
 import org.example.stackoverflowsd.service.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,7 +23,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/user")
-public class UserController {
+public class UserController{
 
     @Autowired
     private UserServiceImpl userService;
@@ -31,6 +33,9 @@ public class UserController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private EmailService emailService;
 
     int checkIfUserMatchesToken(String token, String username) {
         if(token != null && token.startsWith("Bearer ")) {
@@ -411,6 +416,7 @@ public class UserController {
         if(checkIfUserMatchesToken(token, username) == 1) {
             int result = userService.banUser(username, userToBan);
             if(result == 1) {
+                emailService.sendSimpleMessage();
                 return ResponseEntity.ok("User banned successfully");
             }
             else if(result == 2){

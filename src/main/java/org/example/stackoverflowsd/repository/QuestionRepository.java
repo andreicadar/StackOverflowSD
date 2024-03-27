@@ -167,7 +167,9 @@ public class QuestionRepository implements QuestionInterface {
 
 
             String deleteSql = "DELETE FROM question WHERE id = ?";
-            jdbcTemplate.update(deleteSql, questionID);
+            if(jdbcTemplate.update(deleteSql, questionID) == 0) {
+                return 2;
+            }
             return 1;
         } else {
             return 0;

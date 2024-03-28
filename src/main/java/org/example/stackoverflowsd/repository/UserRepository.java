@@ -287,4 +287,29 @@ public class UserRepository implements UserInterface {
             return 0;
         }
     }
+
+    public int verifyIfUserHasARole(String username, String role) {
+        try {
+            String sql = "SELECT * FROM user WHERE username = ?";
+            User user = jdbcTemplate.queryForObject(sql, new Object[]{username}, (rs, rowNum) -> {
+                User u = new User();
+                u.setId((long) rs.getInt("id"));
+                u.setUsername(rs.getString("username"));
+                u.setEmail(rs.getString("email"));
+                u.setPassword(rs.getString("password"));
+                u.setRole(rs.getString("role"));
+                u.setScore(rs.getFloat("score"));
+                return u;
+            });
+            if(user.getRole().equals(role))
+            {
+                return 1;
+            }
+            return 0;
+        }
+        catch (Exception e)
+        {
+            return 0;
+        }
+    }
 }

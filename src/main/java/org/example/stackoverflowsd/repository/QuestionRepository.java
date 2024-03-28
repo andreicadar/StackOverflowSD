@@ -25,8 +25,10 @@ public class QuestionRepository implements QuestionInterface {
     }
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private UserRepository userRepository;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     public int postQuestion(Question question, MultipartFile image) {
         String sqlQuery = "SELECT id FROM user WHERE username = ?";
@@ -136,7 +138,7 @@ public class QuestionRepository implements QuestionInterface {
         String author = jdbcTemplate.queryForObject(selectUserSql, String.class, userID);
 
 
-        if (author.equals(username)) {
+        if (author.equals(username) || userRepository.verifyIfUserHasARole(username, "ROLE_MODERATOR") == 1) {
             String deleteQuestionTagJoinSql = "DELETE FROM question_tag_join WHERE question_id = ?";
             jdbcTemplate.update(deleteQuestionTagJoinSql, questionID);
 
@@ -201,7 +203,7 @@ public class QuestionRepository implements QuestionInterface {
             final String selectUserSql = "SELECT username FROM user WHERE id = ?";
             String authorFromID = jdbcTemplate.queryForObject(selectUserSql, String.class, question.getUserID());
 
-            if (!authorFromID.equals(author)) {
+            if (!authorFromID.equals(author) && userRepository.verifyIfUserHasARole(author, "ROLE_MODERATOR") == 0) {
                 return 0;
             }
 

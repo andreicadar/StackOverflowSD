@@ -2,6 +2,7 @@ package org.example.stackoverflowsd.repository;
 
 import org.example.stackoverflowsd.model.Answer;
 import org.example.stackoverflowsd.model.Question;
+import org.example.stackoverflowsd.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,6 +25,8 @@ public class AnswerRepository implements  AnswerInterface{
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired UserRepository userRepository;
 
     @Override
     public <S extends Question> S save(S entity) {
@@ -153,7 +156,7 @@ public class AnswerRepository implements  AnswerInterface{
 
             sql = "SELECT id FROM user WHERE username = ?";
             int authorID = jdbcTemplate.queryForObject(sql, new Object[]{username}, Integer.class);
-            if (authorID != answer.getUserID()) {
+            if (authorID != answer.getUserID() && userRepository.verifyIfUserHasARole(username, "ROLE_MODERATOR") == 0) {
                 return 0;
 
             }
@@ -311,7 +314,7 @@ public class AnswerRepository implements  AnswerInterface{
         sql = "SELECT id FROM user WHERE username = ?";
         int usernameID = jdbcTemplate.queryForObject(sql, new Object[]{username}, Integer.class);
 
-        if(usernameID != answer.getUserID()) {
+        if(usernameID != answer.getUserID() && userRepository.verifyIfUserHasARole(username, "ROLE_MODERATOR") == 0){
             return 0;
         }
 

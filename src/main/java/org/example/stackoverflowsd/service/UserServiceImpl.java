@@ -116,6 +116,10 @@ public class UserServiceImpl implements UserDetailsService {
         return userRepository.deleteUserByUsername(username);
     }
 
+    public int findUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
     public int updateUser(String username, String newUsername, String password, String email){
         return userRepository.updateUser(username, newUsername, password, email);
     }
@@ -150,5 +154,9 @@ public class UserServiceImpl implements UserDetailsService {
 
     public int unbanUser(String username, String userToUnban) {
         return userRepository.unbanUser(username, userToUnban);
+    }
+
+    public Object getAnswersOfUser(String username) {
+        return answerRepository.getAnswersOfUser(username);
     }
 }

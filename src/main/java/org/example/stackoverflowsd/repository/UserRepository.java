@@ -14,6 +14,9 @@ public class UserRepository implements UserInterface {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    public int findByEmail(String email) {
+        return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM user WHERE email = ?", Integer.class, email);
+    }
     public int deleteUserByUsername(String username) {
         return jdbcTemplate.update("DELETE FROM user WHERE username = ?", username);
     }

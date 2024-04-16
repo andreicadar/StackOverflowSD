@@ -352,6 +352,30 @@ public class AnswerRepository implements  AnswerInterface{
 
         return 1;
     }
+
+    public Object getAnswersOfUser(String username) {
+        final String selectSql = "SELECT id FROM user WHERE username = ?";
+        int userID = jdbcTemplate.queryForObject(selectSql, Integer.class, username);
+
+        final String selectSql2 = "SELECT * FROM answer WHERE userID = ?";
+        List<Answer> answers = jdbcTemplate.query(selectSql2, new Object[]{userID}, (rs, rowNum) -> {
+            Answer a = new Answer();
+            a.setId((long) rs.getInt("id"));
+            a.setUserID(rs.getInt("userID"));
+            a.setText(rs.getString("text"));
+            a.setScore(rs.getInt("score"));
+            a.setCreationTime(rs.getTimestamp("creationTime").toLocalDateTime());
+            a.setPicturePath(rs.getString("picturePath"));
+            a.setQuestionID(rs.getInt("questionID"));
+            return a;
+        });
+
+        for(Answer a : answers) {
+            a.setAuthor(username);
+        }
+
+        return answers;
+    }
 }
 
 

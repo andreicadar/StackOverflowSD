@@ -63,10 +63,11 @@ public class UserController{
 
     @PostMapping("/register")
     public ResponseEntity<String> addNewUser(@RequestBody User userInfo) {
-        if(userService.checkIfUserExists(userInfo.getUsername()) == 1)
+        if(userService.checkIfUserExists(userInfo.getUsername()) == 1 || userService.findUserByEmail(userInfo.getEmail()) == 1)
         {
             return ResponseEntity.badRequest().body("User already exists");
         }
+            userInfo.setRole("ROLE_USER");
             return ResponseEntity.ok(userService.addUser(userInfo));
     }
 
@@ -169,13 +170,13 @@ public class UserController{
                 if(userService.postQuestion(question, image) == 1)
                     return ResponseEntity.ok("Question posted successfully");
                 else
-                    return ResponseEntity.status(500).build();
+                    return ResponseEntity.status(500).body("Internal Server Error");
             } else {
-                return ResponseEntity.status(401).build();
+                return ResponseEntity.status(401).body("Unauthorized");
             }
         }
         catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body("Bad Request");
         }
     }
 
@@ -333,6 +334,16 @@ public class UserController{
             else {
                 return ResponseEntity.badRequest().body("Answer not found");
             }
+        }
+        else {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
+    @GetMapping("/getAnswersOfUser")
+    public ResponseEntity<?> getAnswersOfUser(@RequestHeader("Authorization") String token, @RequestParam String username) {
+        if(checkIfUserMatchesToken(token, username) == 1) {
+            return ResponseEntity.ok().body(userService.getAnswersOfUser(username));
         }
         else {
             return ResponseEntity.status(401).build();

@@ -31,9 +31,10 @@ function Register() {
             const response = await register(jsonData);
             console.log(response);
             setSuccessMessage('Registration successful! Redirecting to login...');
+            setErrorMessage('');
             setTimeout(() => {
                 navigate('/login');
-            }, 3000); // Redirect after 3 seconds
+            }, 3000);
         } catch (error) {
             console.error('Error registering:', error.message);
             if (error.response) {
@@ -62,11 +63,11 @@ function Register() {
         title: {
             color: 'orange',
             marginBottom: '40px',
-            fontSize: '40px', // Increased font size for the title
+            fontSize: '40px',
         },
         button: {
-            padding: '12px 24px', // Increased padding for the buttons
-            fontSize: '18px', // Increased font size for the buttons
+            padding: '12px 24px',
+            fontSize: '18px',
             border: 'none',
             borderRadius: '5px',
             cursor: 'pointer',
@@ -75,21 +76,21 @@ function Register() {
             boxSizing: 'border-box',
             boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
             transition: 'transform 0.3s ease',
-            background: '#FF6347', // Red color
+            background: '#FF6347',
             color: '#fff',
         },
         text: {
             marginBottom: '10px',
             fontSize: '14px',
         },errorMessage: {
-            color: '#FF6347', // Light red color
+            color: '#FF6347',
             fontSize: '20px',
             textAlign: 'center',
             margin: '10px',
-            width: '100%', // Set width to 100%
+            width: '100%',
         },
         successMessage: {
-            color: '#28a745', // Green color
+            color: '#28a745',
             fontSize: '20px',
             textAlign: 'center',
             margin: '10px',
@@ -97,7 +98,6 @@ function Register() {
         },
     };
 
-    // Merging button styles with common button styles
     styles.button = { ...styles.button };
 
     return (
@@ -128,13 +128,13 @@ function Register() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                 />
-                <div style={{ height: errorMessage ? '24px' : '0' }} /> {/* Empty placeholder for error message */}
+                <div style={{ height: errorMessage ? '24px' : '0' }} /> {}
                 {errorMessage && (
                     <div style={styles.errorMessage}>
                         {errorMessage}
                     </div>
                 )}
-                <div style={{ height: successMessage ? '24px' : '0' }} /> {/* Empty placeholder for success message */}
+                <div style={{ height: successMessage ? '24px' : '0' }} /> {}
                 {successMessage && (
                     <div style={styles.successMessage}>
                         {successMessage}

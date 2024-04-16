@@ -62,9 +62,6 @@ function Login({setUsername, setToken }) {
         <div className="App" style={styles.container}>
             <Routes>
                 <Route path="/register" element={<Register />} />
-                {/* Use Link component for home navigation */}
-                {/* Add a default route for handling unknown routes */}
-                {/*<Route path="/*" element={<Navigate to="/login" />} />*/}
             </Routes>
             <h1 style={styles.title}>StackOverflow</h1>
             <form onSubmit={(e) => e.preventDefault()} style={styles.form}>
@@ -89,15 +86,12 @@ function Login({setUsername, setToken }) {
                     Login
                 </button>
                 <p style={styles.text}>Don't have an account yet?</p>
-                {/* Use Link from React Router to navigate */}
                 <Link to="/register">
                     <button style={styles.blueButton}>
                         Register
                     </button>
                 </Link>
             </form>
-            {/* Define route for Register component */}
-
         </div>
     );
 }

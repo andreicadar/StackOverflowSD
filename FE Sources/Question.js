@@ -1,7 +1,7 @@
 import React from 'react';
 
 function Question({ author, title, text, creationTime, tags, score, onDelete }) {
-    // Define styles for the component elements
+
     const styles = {
         container: {
             fontFamily: 'Arial, sans-serif',
@@ -11,12 +11,12 @@ function Question({ author, title, text, creationTime, tags, score, onDelete }) 
             margin: '20px 0',
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
             backgroundColor: '#fff',
-            position: 'relative', // Required for absolute positioning of the delete button
+            position: 'relative',
         },
         header: {
             borderBottom: '1px solid #eee',
             paddingBottom: '10px',
-            marginBottom: '20px', // Increased spacing
+            marginBottom: '20px',
         },
         title: {
             fontWeight: 'bold',
@@ -24,12 +24,12 @@ function Question({ author, title, text, creationTime, tags, score, onDelete }) 
             color: '#333'
         },
         meta: {
-            fontSize: '18px', // Increased font size
+            fontSize: '18px',
             color: '#666',
             marginBottom: '10px'
         },
         author: {
-            color: '#0074d9' // Color the author blue
+            color: '#0074d9'
         },
         text: {
             lineHeight: '1.6',

@@ -13,7 +13,7 @@ function App() {
         <Router>
             <Routes>
                 <Route path="/" element={<Navigate to="/login" />} />
-                <Route path="/login/*" element={<Login setUsername={setUsername} setToken={setToken} />} />
+                <Route path="/login" element={<Login setUsername={setUsername} setToken={setToken} />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/home" element={<Home username={username} token={token} />} />
             </Routes>

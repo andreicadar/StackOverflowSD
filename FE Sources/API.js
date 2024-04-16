@@ -111,12 +111,34 @@ export const getUserByUsername = async (username, token) => {
         const response = await axios.get(`${BASE_URL}/getUserByUsername?username=${username}`, config); // Add username parameter to the URL
 
         if (response.status !== 200) {
-            throw new Error(`Failed to get questions. Status: ${response.status}`);
+            throw new Error(`Failed to get userInfo. Status: ${response.status}`);
         }
 
         return response.data;
     } catch (error) {
-        console.error('Error fetching questions:', error);
+        console.error('Error fetching userInfo:', error);
+        throw error;
+    }
+};
+
+export const getAnswersOfUser = async (username, token) => {
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Add Authorization header with token
+            }
+        };
+
+        const response = await axios.get(`${BASE_URL}/getAnswersOfUser?username=${username}`, config); // Add username parameter to the URL
+
+        if (response.status !== 200) {
+            throw new Error(`Failed to get answers. Status: ${response.status}`);
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching answers:', error);
         throw error;
     }
 };

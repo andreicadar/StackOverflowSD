@@ -354,11 +354,9 @@ public class AnswerRepository implements  AnswerInterface{
     }
 
     public Object getAnswersOfUser(String username) {
-        final String selectSql = "SELECT id FROM user WHERE username = ?";
-        int userID = jdbcTemplate.queryForObject(selectSql, Integer.class, username);
-
-        final String selectSql2 = "SELECT * FROM answer WHERE userID = ?";
-        List<Answer> answers = jdbcTemplate.query(selectSql2, new Object[]{userID}, (rs, rowNum) -> {
+        //sort them desc by creation time
+        final String selectSql = "SELECT * FROM answer WHERE userID = (SELECT id FROM user WHERE username = ?) ORDER BY creationTime DESC";
+        List<Answer> answers = jdbcTemplate.query(selectSql, new Object[]{username}, (rs, rowNum) -> {
             Answer a = new Answer();
             a.setId((long) rs.getInt("id"));
             a.setUserID(rs.getInt("userID"));
@@ -373,7 +371,6 @@ public class AnswerRepository implements  AnswerInterface{
         for(Answer a : answers) {
             a.setAuthor(username);
         }
-
         return answers;
     }
 }

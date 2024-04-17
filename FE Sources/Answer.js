@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Answer({ text, creationTime, picturePath, score, questionID, onDelete }) {
+function Answer({ text, creationTime, picturePath, score, questionID, onDelete, onEdit }) {
 
     const styles = {
         container: {
@@ -35,6 +35,19 @@ function Answer({ text, creationTime, picturePath, score, questionID, onDelete }
             borderRadius: '8px',
             marginBottom: '10px',
         },
+        editButton: {
+            position: 'absolute',
+            bottom: '10px',
+            right: '125px',
+            backgroundColor: '#1fafdb',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            padding: '8px 16px', // Ensure this matches the delete button
+            cursor: 'pointer',
+            fontSize: '16px', // Ensure font size matches
+            lineHeight: '1', // Standardize line height
+        },
         deleteButton: {
             position: 'absolute',
             bottom: '10px',
@@ -45,6 +58,8 @@ function Answer({ text, creationTime, picturePath, score, questionID, onDelete }
             borderRadius: '5px',
             padding: '8px 16px',
             cursor: 'pointer',
+            fontSize: '16px',
+            lineHeight: '1',
         }
     };
 
@@ -54,9 +69,10 @@ function Answer({ text, creationTime, picturePath, score, questionID, onDelete }
         <div style={styles.container}>
             <div style={styles.text}>{text}</div>
             <div style={styles.meta}>Answered on {creationTime}</div>
-            {picturePath && <img src={picturePath} alt="Answer" style={styles.image} />}
+            {picturePath && <img src={picturePath} alt="Answer" style={styles.image}/>}
             <div style={styles.score}>Score: {score}</div>
             <div>Question ID: {questionID}</div>
+            <button style={styles.editButton} onClick={onEdit}>✏️</button>
             <button style={styles.deleteButton} onClick={onDelete}>DELETE</button>
         </div>
     );

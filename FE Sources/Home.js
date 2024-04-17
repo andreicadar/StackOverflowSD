@@ -66,10 +66,6 @@ function Home({ username, token }) {
 
     };
 
-    const handleDeleteUser = () => {
-
-    };
-
     const fetchQuestions = async () => {
         try {
             const response = await getQuestionsOfUser(username, token);
@@ -130,9 +126,6 @@ function Home({ username, token }) {
         setAnswerFormData({ ...answerFormData, image: file });
     };
 
-    function handleDeleteQuestion(id) {
-
-    }
 
     const fetchAnswers = async () => {
 
@@ -159,6 +152,30 @@ function Home({ username, token }) {
         setErrorMessage('');
         fetchAnswers();
     };
+
+    function handleUserEdit() {
+        
+    }
+
+    function handleUserDelete()
+    {
+
+    }
+
+    function handleAnswerEdit(id) {
+    }
+
+    function handleAnswerDelete(id) {
+
+    }
+
+    function handleQuestionEdit(id) {
+
+    }
+
+    function handleQuestionDelete(id) {
+
+    }
 
     return (
         <div style={styles.container}>
@@ -224,8 +241,10 @@ function Home({ username, token }) {
                             <input style={userInfoStyles.userInfoInput} type="text" value={userInfo.score} readOnly/>
                         </div>
                         <div style={{textAlign: 'center'}}> {}
-                            <button style={styles.deleteButtonStyle} onClick={() => handleDeleteUser(userInfo.id)}>DELETE
-                            </button>
+                            <button style={styles.userInfoEditButton} onClick={() => handleUserEdit()}>✏️</button>
+
+                            <button style={styles.deleteButtonStyle} onClick={() => handleUserEdit()}>DELETE</button>
+
                         </div>
 
                     </div>
@@ -254,7 +273,7 @@ function Home({ username, token }) {
                     </div>)}
                 {showQuestions && (
                     questions.map(question => (
-                        <Question key={question.id} {...question} onDelete={() => handleDeleteQuestion(question.id)} />
+                    <Question key={question.id} {...question} onDelete={handleQuestionDelete(question.id)} onEdit={handleQuestionEdit()} />
                     )))
                 }
                 {showAnswersForm && (
@@ -270,7 +289,7 @@ function Home({ username, token }) {
                     </div>)}
                 {showAnswers && (
                     answers.map(answer => (
-                        <Answer key={answer.id} {...answer} />
+                        <Answer key={answer.id} onDelete={handleAnswerDelete(answer.id)} onEdit={handleAnswerDelete(answer.id)} {...answer} />
                     ))
                 )}
             </div>
@@ -426,6 +445,22 @@ const styles = {
         fontSize: '20px',
         marginTop: '20px',
         cursor: 'pointer',
+        lineHeight: '1', // Standardize line height
+
+    },
+    userInfoEditButton: {
+        backgroundColor: '#1fafdb',
+        color: 'white',
+        border: 'none',
+        borderRadius: '8px',
+        padding: '15px 30px',
+        fontSize: '20px',
+        marginTop: '20px',
+        cursor: 'pointer',
+        marginRight: '10px', // Add margin to separate from delete button
+        lineHeight: '1',
+        right: '125px',
+
     }
 
 };

@@ -1,7 +1,6 @@
 import React from 'react';
 
-function Question({ author, title, text, creationTime, tags, score, onDelete }) {
-
+function Question({ author, title, text, creationTime, tags, score, onDelete, onEdit }) {
     const styles = {
         container: {
             fontFamily: 'Arial, sans-serif',
@@ -66,6 +65,19 @@ function Question({ author, title, text, creationTime, tags, score, onDelete }) 
             marginBottom: '10px',
             borderRadius: '8px'
         },
+        editButton: {
+            position: 'absolute',
+            bottom: '10px',
+            right: '125px',
+            backgroundColor: '#1fafdb',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            padding: '8px 16px', // Ensure this matches the delete button
+            cursor: 'pointer',
+            fontSize: '16px', // Ensure font size matches
+            lineHeight: '1', // Standardize line height
+        },
         deleteButton: {
             position: 'absolute',
             bottom: '10px',
@@ -76,7 +88,10 @@ function Question({ author, title, text, creationTime, tags, score, onDelete }) 
             borderRadius: '5px',
             padding: '8px 16px',
             cursor: 'pointer',
+            fontSize: '16px',
+            lineHeight: '1',
         }
+
     };
 
     const tagsArray = tags ? tags.split(', ') : [];
@@ -98,6 +113,7 @@ function Question({ author, title, text, creationTime, tags, score, onDelete }) 
                 ))}
             </div>
             <div style={styles.score}>Score: {score}</div>
+            <button style={styles.editButton} onClick={onEdit}>✏️</button>
             <button style={styles.deleteButton} onClick={onDelete}>DELETE</button>
         </div>
     );

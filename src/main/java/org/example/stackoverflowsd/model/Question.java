@@ -39,6 +39,8 @@ public class Question {
     @Column(name = "userID")
     private int userID;
 
+    private String pictureBase64;
+
 
     public Question() {
 
@@ -124,6 +126,14 @@ public class Question {
 
     public int getUserID() {
         return userID;
+    }
+
+    public String getPictureBase64() {
+        return pictureBase64;
+    }
+
+    public void setPictureBase64(String pictureBase64) {
+        this.pictureBase64 = pictureBase64;
     }
 
     public Question(String author, String title, String text, String tags) {

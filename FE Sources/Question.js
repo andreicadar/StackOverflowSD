@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Question({ author, title, text, creationTime, tags, score, onDelete, onEdit }) {
+function Question({ id, author, title, text, creationTime, tags, score, onDelete, onEdit, pictureBase64, onPostAnswer }) {
     const styles = {
         container: {
             fontFamily: 'Arial, sans-serif',
@@ -53,10 +53,17 @@ function Question({ author, title, text, creationTime, tags, score, onDelete, on
             color: '#108ee9',
             fontSize: '16px'
         },
+        image: {
+            maxHeight: '450px', // Set the desired height
+            width: 'auto',      // Maintain aspect ratio
+            display: 'block',
+            margin: '0 auto 10px auto',
+            borderRadius: '8px'
+        },
         imagePlaceholder: {
             backgroundColor: '#f0f0f0',
             width: '100%',
-            height: '200px',
+            height: '200px',    // Ensure the same height as images
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -65,18 +72,31 @@ function Question({ author, title, text, creationTime, tags, score, onDelete, on
             marginBottom: '10px',
             borderRadius: '8px'
         },
+        answerButton: {
+            position: 'absolute',
+            bottom: '10px',
+            right: '200px',
+            backgroundColor: '#1170da',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            padding: '10px 20px',
+            cursor: 'pointer',
+            fontSize: '16px',
+            lineHeight: '1',
+        },
         editButton: {
             position: 'absolute',
             bottom: '10px',
             right: '125px',
-            backgroundColor: '#1fafdb',
+            backgroundColor: '#f1ac2d',
             color: 'white',
             border: 'none',
             borderRadius: '5px',
-            padding: '8px 16px', // Ensure this matches the delete button
+            padding: '10px 20px',
             cursor: 'pointer',
-            fontSize: '16px', // Ensure font size matches
-            lineHeight: '1', // Standardize line height
+            fontSize: '16px',
+            lineHeight: '1',
         },
         deleteButton: {
             position: 'absolute',
@@ -86,12 +106,11 @@ function Question({ author, title, text, creationTime, tags, score, onDelete, on
             color: 'white',
             border: 'none',
             borderRadius: '5px',
-            padding: '8px 16px',
+            padding: '10px 20px',
             cursor: 'pointer',
             fontSize: '16px',
             lineHeight: '1',
         }
-
     };
 
     const tagsArray = tags ? tags.split(', ') : [];
@@ -103,9 +122,11 @@ function Question({ author, title, text, creationTime, tags, score, onDelete, on
                 <div style={styles.title}>{title}</div>
                 <div style={styles.meta}>Asked by <span style={styles.author}>{author}</span> on {creationTime}</div>
             </div>
-            <div style={styles.imagePlaceholder}>
-                Picture Placeholder
-            </div>
+            {pictureBase64 ? (
+                <img src={`data:image/jpeg;base64,${pictureBase64}`} alt="Question related" style={styles.image}/>
+            ) : (
+                <div style={styles.imagePlaceholder}>Picture Placeholder</div>
+            )}
             <div style={styles.text}>{text}</div>
             <div style={styles.tags}>
                 {tagsArray.map((tag, index) => (
@@ -115,6 +136,8 @@ function Question({ author, title, text, creationTime, tags, score, onDelete, on
             <div style={styles.score}>Score: {score}</div>
             <button style={styles.editButton} onClick={onEdit}>✏️</button>
             <button style={styles.deleteButton} onClick={onDelete}>DELETE</button>
+            <button style={styles.answerButton} onClick={() => onPostAnswer(id)}>Post an Answer</button>
+
         </div>
     );
 }

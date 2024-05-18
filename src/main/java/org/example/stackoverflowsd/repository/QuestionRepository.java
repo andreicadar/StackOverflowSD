@@ -261,7 +261,7 @@ public class QuestionRepository implements QuestionInterface {
         return 0;
     }
 
-    public Object searchQuestions(String title, String text, String author, String tags) {
+    public List<Question> searchQuestions(String title, String text, String author, String tags) {
         final String selectSql = "SELECT q.*, GROUP_CONCAT(t.name SEPARATOR ', ') AS tagNames " +
                 "FROM question q " +
                 "LEFT JOIN question_tag_join qt ON q.id = qt.question_id " +
@@ -438,9 +438,8 @@ public class QuestionRepository implements QuestionInterface {
             author = jdbcTemplate.queryForObject(selectSql4, String.class, answer.getUserID());
             answer.setAuthor(author);
         }
-
         return new QuestionAnswers(question, answers);
-        }
+    }
 
 
     @Override

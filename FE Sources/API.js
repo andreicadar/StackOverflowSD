@@ -99,6 +99,38 @@ export const postQuestion = async (username, token, image, title, text, tags) =>
     }
 };
 
+export const postAnswerToQuestion = async (username, token, image, questionID, text) => {
+    try {
+        const formData = new FormData();
+        formData.append('author', username);
+        formData.append('questionID', questionID);
+        formData.append('text', text);
+
+        // Append the image file if it exists
+        if (image) {
+            formData.append('image', image);
+        }
+
+        const config = {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': `Bearer ${token}`
+            }
+        };
+
+        const response = await axios.post(`${BASE_URL}/answerQuestion`, formData, config);
+
+        if (response.status !== 200) {
+            throw new Error(`Failed to post answer. Status: ${response.status}`);
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error('Error posting answer:', error);
+        throw error;
+    }
+}
+
 export const getUserByUsername = async (username, token) => {
     try {
         const config = {
@@ -142,3 +174,26 @@ export const getAnswersOfUser = async (username, token) => {
         throw error;
     }
 };
+
+export const searchQuestions = async (titleQuery, token) => {
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Add Authorization header with token
+            }
+        };
+        const response = await axios.get(`${BASE_URL}/searchQuestions?title=${titleQuery}`, config); // Add titleQuery parameter to the URL
+
+        if (response.status !== 200) {
+            throw new Error(`Failed to search questions. Status: ${response.status}`);
+        }
+
+        return response.data;
+    }
+    catch (error) {
+        console.error('Error searching questions:', error);
+        throw error;
+    }
+
+}

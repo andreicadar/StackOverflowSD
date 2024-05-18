@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,9 +69,20 @@ public class UserServiceImpl implements UserDetailsService {
     }
 
     public List<Question> getQuestionsOfUser(String username) {
-        return questionRepository.getQuestionsOfUser(username);
+        List<Question> questions = questionRepository.getQuestionsOfUser(username);
+        for (Question question : questions) {
+            try {
+                byte[] fileContent = Files.readAllBytes(Paths.get(question.getPicturePath()));
+                String encodedString = Base64.getEncoder().encodeToString(fileContent);
+                question.setPictureBase64(encodedString);
+            } catch (IOException e) {
+                e.printStackTrace();
+                // Handle the error appropriately, maybe set a default value or log the error
+                question.setPictureBase64(null);
+            }
+        }
+        return questions;
     }
-
 
     public int deleteQuestion(String username, Long questionID) {
         return questionRepository.deleteQuestion(username, questionID);
@@ -79,7 +93,18 @@ public class UserServiceImpl implements UserDetailsService {
     }
 
     public Object searchQuestions(String title, String text, String author, String tags) {
-        return questionRepository.searchQuestions(title, text, author, tags);
+        List<Question> questions = questionRepository.searchQuestions(title, text, author, tags);
+        for (Question question : questions) {
+            try {
+                byte[] fileContent = Files.readAllBytes(Paths.get(question.getPicturePath()));
+                String encodedString = Base64.getEncoder().encodeToString(fileContent);
+                question.setPictureBase64(encodedString);
+            } catch (IOException e) {
+                e.printStackTrace();
+                question.setPictureBase64(null);
+            }
+        }
+        return questions;
     }
 
     public int upvoteQuestion(String username, int questionID) {
@@ -156,7 +181,19 @@ public class UserServiceImpl implements UserDetailsService {
         return userRepository.unbanUser(username, userToUnban);
     }
 
-    public Object getAnswersOfUser(String username) {
-        return answerRepository.getAnswersOfUser(username);
+    public List<Answer> getAnswersOfUser(String username) {
+        List<Answer> answers = answerRepository.getAnswersOfUser(username);
+        for (Answer answer : answers) {
+            try {
+                byte[] fileContent = Files.readAllBytes(Paths.get(answer.getPicturePath()));
+                String encodedString = Base64.getEncoder().encodeToString(fileContent);
+                answer.setPictureBase64(encodedString);
+            } catch (IOException e) {
+                e.printStackTrace();
+                // Handle the error appropriately, maybe set a default value or log the error
+                answer.setPictureBase64(null);
+            }
+        }
+        return answers;
     }
 }

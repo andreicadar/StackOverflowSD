@@ -34,6 +34,8 @@ public class Answer {
 
     private String author;
 
+    private String pictureBase64;
+
     public void setAuthor(String author) {
         this.author = author;
     }
@@ -97,6 +99,14 @@ public class Answer {
 
     public int getQuestionID() {
         return questionID;
+    }
+
+    public String getPictureBase64() {
+        return pictureBase64;
+    }
+
+    public void setPictureBase64(String pictureBase64) {
+        this.pictureBase64 = pictureBase64;
     }
 
     public Answer() {

@@ -353,7 +353,7 @@ public class AnswerRepository implements  AnswerInterface{
         return 1;
     }
 
-    public Object getAnswersOfUser(String username) {
+    public List<Answer> getAnswersOfUser(String username) {
         //sort them desc by creation time
         final String selectSql = "SELECT * FROM answer WHERE userID = (SELECT id FROM user WHERE username = ?) ORDER BY creationTime DESC";
         List<Answer> answers = jdbcTemplate.query(selectSql, new Object[]{username}, (rs, rowNum) -> {

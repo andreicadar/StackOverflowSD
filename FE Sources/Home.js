@@ -1,5 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {getAnswersOfUser, getQuestionsOfUser, getUserByUsername, postQuestion} from "./API";
+import {
+    getAnswersOfUser,
+    getQuestionsOfUser,
+    getUserByUsername,
+    postAnswerToQuestion,
+    postQuestion,
+    searchQuestions
+} from "./API";
 import Question from "./Question";
 import Answer from "./Answer";
 import * as PropTypes from "prop-types";
@@ -19,6 +26,9 @@ function Home({ username, token }) {
     const [showAnswersForm, setShowAnswersForm] = useState(false);
     const [showQuestions, setShowQuestions] = useState(true);
     const [showAnswers, setShowAnswers] = useState(false);
+    const [questionIDToAnswer, setQuestionIDToAnswer] = useState(null);
+    const [showSearchQuestions, setShowSearchQuestions] = useState(false);
+    const [titleToSearchFor, setTitleToSearchFor] = useState('');
     const [questionFormData, setQuestionFormData] = useState({
         title: '',
         text: '',
@@ -36,6 +46,10 @@ function Home({ username, token }) {
 
         if (!username || !token) {
             setRedirectToLogin(true);
+        }
+        else {
+            // Fetch questions when username or token changes
+            fetchQuestions().then(r => console.log('Questions fetched')).catch(e => console.error('Error fetching questions:', e));
         }
     }, [username, token]);
 
@@ -56,6 +70,7 @@ function Home({ username, token }) {
 
     const handleUsernameClick = () => {
         fetchUserInformation();
+        setShowSearchQuestions(false);
         setShowQuestionForm(false);
         setShowQuestions(false);
         setErrorMessage('');
@@ -69,6 +84,24 @@ function Home({ username, token }) {
     const fetchQuestions = async () => {
         try {
             const response = await getQuestionsOfUser(username, token);
+            setShowSearchQuestions(false);
+            setQuestions(response);
+            setShowQuestionForm(false);
+            setShowUserInfo(false);
+            setShowQuestions(true);
+            setShowAnswers(false);
+            setShowAnswersForm(false);
+            setErrorMessage('');
+
+        } catch (error) {
+            setErrorMessage('Error fetching questions. Please try again later.')
+        }
+    };
+
+    const fetchSearchedQuestions = async () => {
+        try {
+            const response = await searchQuestions(titleToSearchFor, token);
+            setShowSearchQuestions(false);
             setQuestions(response);
             setShowQuestionForm(false);
             setShowUserInfo(false);
@@ -89,12 +122,11 @@ function Home({ username, token }) {
             await postQuestion(username, token, image, title, text, tags.join(', '));
 
             setQuestionFormData({ title: '', text: '', tags: [], image: null });
-            setShowQuestionForm(false);
-            fetchQuestions();
             setSuccessMessage('Question posted successfully.');
             setTimeout(() => {
                 setSuccessMessage('');
-            }, 3000);
+            }, 5000);
+            await fetchQuestions();
         } catch (error) {
             if (error.response && error.response.data && error.response.data.error) {
                 setErrorMessage(error.response.data.error);
@@ -132,6 +164,7 @@ function Home({ username, token }) {
         try {
 
             const userAnswers = await getAnswersOfUser(username, token);
+            setShowSearchQuestions(false);
             setAnswers(userAnswers);
             setShowAnswers(true);
             setShowQuestions(false);
@@ -144,17 +177,17 @@ function Home({ username, token }) {
         }
     };
 
-    const handleSeeMyAnswers = () => {
+    const handleSeeMyAnswers = async () => {
+        setShowSearchQuestions(false);
         setShowQuestionForm(false);
         setShowUserInfo(false);
         setShowQuestionForm(false);
         setShowAnswers(true);
         setErrorMessage('');
-        fetchAnswers();
+        await fetchAnswers();
     };
-
     function handleUserEdit() {
-        
+
     }
 
     function handleUserDelete()
@@ -177,28 +210,66 @@ function Home({ username, token }) {
 
     }
 
+
+    async function handlePostAnswer(event) {
+        event.preventDefault();
+        try {
+            const {text, image} = answerFormData;
+            await postAnswerToQuestion(username, token, image, questionIDToAnswer, text);
+            setAnswerFormData({text: '', image: null});
+            setSuccessMessage('Answer posted successfully.');
+            setTimeout(() => {
+                setSuccessMessage('');
+            }, 5000);
+            await fetchAnswers();
+
+        }
+        catch (error) {
+            if (error.response && error.response.data && error.response.data.error) {
+                setErrorMessage(error.response.data.error);
+            } else {
+                setErrorMessage('Error posting answer. Please try again later.');
+            }
+        }
+
+    }
+
+    function handlePostAnAnswerButton(id)
+    {
+        setQuestionIDToAnswer(id);
+        setShowSearchQuestions(false);
+        setShowQuestionForm(false);
+        setShowAnswers(false);
+        setShowUserInfo(false);
+        setShowQuestions(false)
+        setShowAnswersForm(true);
+    }
+
+    function handlePostAQuestionButton() {
+        setShowSearchQuestions(false);
+        setShowQuestionForm(true);
+        setShowAnswers(false);
+        setShowUserInfo(false);
+        setShowQuestions(false);
+        setShowAnswersForm(false);
+    }
+
+    function handleSearchQuestionsButton() {
+        setShowSearchQuestions(true);
+        setShowQuestionForm(false);
+        setShowAnswers(false);
+        setShowUserInfo(false);
+        setShowQuestions(false);
+        setShowAnswersForm(false);
+    }
+
     return (
         <div style={styles.container}>
             <div style={styles.sideMenu}>
+                <button style={styles.menuButton} onClick={handleSearchQuestionsButton}>Search Questions</button>
                 <button style={styles.menuButton} onClick={fetchQuestions}>See My Questions</button>
-                <button style={styles.menuButton} onClick={() => {
-                    setShowQuestionForm(true);
-                    setShowAnswers(false);
-                    setShowUserInfo(false);
-                    setShowQuestions(false);
-                    setShowAnswersForm(false);
-                }}>Post a Question
-                </button>
+                <button style={styles.menuButton} onClick={handlePostAQuestionButton}>Post a Question</button>
                 <button style={styles.menuButton} onClick={handleSeeMyAnswers}>See My Answers</button>
-                <button style={styles.menuButton} onClick={() => {
-                    setShowQuestionForm(false);
-                    setShowAnswers(false);
-                    setShowUserInfo(false);
-                    setShowQuestions(false)
-                    setShowAnswersForm(true);
-                }}>Post an Answer
-                </button>
-
             </div>
 
             <div style={styles.content}>
@@ -249,6 +320,25 @@ function Home({ username, token }) {
 
                     </div>
                 )}
+
+                {showSearchQuestions && (
+                    <div style={styles.formContainer}>
+                        <h2>Search Questions</h2>
+                        <input style={styles.formInput} type="text" placeholder="Title to search for" value={titleToSearchFor} onChange={(e) => setTitleToSearchFor(e.target.value)} />
+                        <button style={styles.formButton} onClick={fetchSearchedQuestions}>Search</button>
+                        {questions.map(question => (
+                        <Question
+                            key={question.id}
+                            onPostAnswer={handlePostAnAnswerButton}
+                            {...question}
+                            onDelete={() => handleQuestionDelete(question.id)}
+                            onEdit={() => handleQuestionEdit(question.id)}
+                        />
+                        ))}
+                    </div>
+                )}
+
+
                 {showQuestionForm && (
                     <div style={styles.formContainer}>
                         <h2>Post a Question</h2>
@@ -272,14 +362,23 @@ function Home({ username, token }) {
                         </form>
                     </div>)}
                 {showQuestions && (
-                    questions.map(question => (
-                    <Question key={question.id} {...question} onDelete={handleQuestionDelete(question.id)} onEdit={handleQuestionEdit()} />
-                    )))
-                }
+                    <div>
+                        <h1 style={styles.title}>My Questions</h1>
+                        {questions.map(question => (
+                            <Question
+                                key={question.id}
+                                onPostAnswer={handlePostAnAnswerButton}
+                                {...question}
+                                onDelete={() => handleQuestionDelete(question.id)}
+                                onEdit={() => handleQuestionEdit(question.id)}
+                            />
+                        ))}
+                    </div>
+                )}
                 {showAnswersForm && (
                     <div style={styles.formContainer}>
                         <h2>Post an Answer</h2>
-                        <form onSubmit={handlePostQuestion}>
+                        <form onSubmit={handlePostAnswer}>
                             <label style={styles.formLabel}>Text:</label>
                             <textarea style={styles.formTextarea} value={answerFormData.text} onChange={(e) => setAnswerFormData({ ...answerFormData, text: e.target.value })}></textarea><br />
                             <label style={styles.formLabel}>Image:</label>
@@ -288,9 +387,13 @@ function Home({ username, token }) {
                         </form>
                     </div>)}
                 {showAnswers && (
-                    answers.map(answer => (
-                        <Answer key={answer.id} onDelete={handleAnswerDelete(answer.id)} onEdit={handleAnswerDelete(answer.id)} {...answer} />
-                    ))
+                    <div>
+                        <h1 style={styles.title}>My Answers</h1>
+                        {answers.map(answer => (
+                            <Answer key={answer.id} onDelete={handleAnswerDelete(answer.id)}
+                                    onEdit={handleAnswerDelete(answer.id)} {...answer} />
+                        ))}
+                    </div>
                 )}
             </div>
         </div>
@@ -322,15 +425,15 @@ const styles = {
     },
     button: {
         position: 'absolute',
-        top: '2px',
-        right: '5px',
-        padding: '8px 16px',
-        backgroundColor: '#fc9803',
+        top: '5px',
+        right: '10px',
+        padding: '10px 20px',
+        backgroundColor: '#126c02',
         color: 'white',
         border: 'none',
         borderRadius: '5px',
         cursor: 'pointer',
-        fontSize: '16px',
+        fontSize: '22px',
     },
     menuButton: {
         display: 'block',
@@ -370,6 +473,7 @@ const styles = {
         borderRadius: '5px',
         border: '1px solid #ccc',
         marginBottom: '10px',
+        resize: 'none',
         minHeight: '100px'
     },
     formButton: {
@@ -460,8 +564,18 @@ const styles = {
         marginRight: '10px', // Add margin to separate from delete button
         lineHeight: '1',
         right: '125px',
-
-    }
+    },
+    title: {
+        fontSize: '40px',
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: '40px',
+        color: '#000000', // Title color
+        textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', // Text shadow for a subtle effect
+        backgroundColor: '#f8f9fa', // Background color for contrast
+        padding: '10px 20px', // Padding for better readability
+        borderRadius: '8px', // Rounded corners for a modern look
+    },
 
 };
 

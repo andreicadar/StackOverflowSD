@@ -175,7 +175,7 @@ export const getAnswersOfUser = async (username, token) => {
     }
 };
 
-export const searchQuestions = async (titleQuery, token) => {
+export const searchQuestions = async (username, titleQuery, token) => {
     try {
         const config = {
             headers: {
@@ -183,7 +183,7 @@ export const searchQuestions = async (titleQuery, token) => {
                 'Authorization': `Bearer ${token}` // Add Authorization header with token
             }
         };
-        const response = await axios.get(`${BASE_URL}/searchQuestions?title=${titleQuery}`, config); // Add titleQuery parameter to the URL
+        const response = await axios.get(`${BASE_URL}/searchQuestions?username=${username}&title=${titleQuery}`, config); // Add titleQuery parameter to the URL
 
         if (response.status !== 200) {
             throw new Error(`Failed to search questions. Status: ${response.status}`);

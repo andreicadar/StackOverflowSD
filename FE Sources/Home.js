@@ -29,6 +29,7 @@ function Home({ username, token }) {
     const [questionIDToAnswer, setQuestionIDToAnswer] = useState(null);
     const [showSearchQuestions, setShowSearchQuestions] = useState(false);
     const [titleToSearchFor, setTitleToSearchFor] = useState('');
+    const [searchQuestionButtonWasPressed, setSearchQuestionButtonWasPressed] = useState(false);
     const [questionFormData, setQuestionFormData] = useState({
         title: '',
         text: '',
@@ -100,12 +101,13 @@ function Home({ username, token }) {
 
     const fetchSearchedQuestions = async () => {
         try {
-            const response = await searchQuestions(titleToSearchFor, token);
-            setShowSearchQuestions(false);
+            const response = await searchQuestions(username, titleToSearchFor, token);
+            setSearchQuestionButtonWasPressed(true);
+            setShowSearchQuestions(true);
             setQuestions(response);
             setShowQuestionForm(false);
             setShowUserInfo(false);
-            setShowQuestions(true);
+            setShowQuestions(false);
             setShowAnswers(false);
             setShowAnswersForm(false);
             setErrorMessage('');
@@ -255,6 +257,9 @@ function Home({ username, token }) {
     }
 
     function handleSearchQuestionsButton() {
+        setTitleToSearchFor('')
+        setSearchQuestionButtonWasPressed(false);
+        setQuestions([]);
         setShowSearchQuestions(true);
         setShowQuestionForm(false);
         setShowAnswers(false);
@@ -322,19 +327,30 @@ function Home({ username, token }) {
                 )}
 
                 {showSearchQuestions && (
-                    <div style={styles.formContainer}>
-                        <h2>Search Questions</h2>
-                        <input style={styles.formInput} type="text" placeholder="Title to search for" value={titleToSearchFor} onChange={(e) => setTitleToSearchFor(e.target.value)} />
-                        <button style={styles.formButton} onClick={fetchSearchedQuestions}>Search</button>
-                        {questions.map(question => (
-                        <Question
-                            key={question.id}
-                            onPostAnswer={handlePostAnAnswerButton}
-                            {...question}
-                            onDelete={() => handleQuestionDelete(question.id)}
-                            onEdit={() => handleQuestionEdit(question.id)}
-                        />
-                        ))}
+                    <div style={styles.searchContainer}>
+                        <h2 style={styles.title}>Search Questions</h2>
+                        <div style={styles.searchInputContainer}>
+                            <input style={styles.searchInput} type="text" placeholder="Title to search for" value={titleToSearchFor} onChange={(e) => {setTitleToSearchFor(e.target.value); setSearchQuestionButtonWasPressed(false)}} />
+                            <br />
+                            <button style={styles.searchButton} onClick={fetchSearchedQuestions}>Search</button>
+                        </div>
+                        <div style={styles.questionList}>
+                            {questions.length > 0 ? (
+                                questions.map(question => (
+                                    <Question
+                                        key={question.id}
+                                        onPostAnswer={handlePostAnAnswerButton}
+                                        {...question}
+                                        onDelete={() => handleQuestionDelete(question.id)}
+                                        onEdit={() => handleQuestionEdit(question.id)}
+                                    />
+                                ))
+                            ) : (
+                                searchQuestionButtonWasPressed && (
+                                    <p style={styles.noQuestionsText}>No questions found. Please try a different search.</p>
+                                )
+                            )}
+                        </div>
                     </div>
                 )}
 
@@ -575,6 +591,46 @@ const styles = {
         backgroundColor: '#f8f9fa', // Background color for contrast
         padding: '10px 20px', // Padding for better readability
         borderRadius: '8px', // Rounded corners for a modern look
+    },searchContainer: {
+        backgroundColor: '#fff',
+        padding: '20px',
+        borderRadius: '8px',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        marginBottom: '20px',
+    },
+
+    searchInputContainer: {
+        marginBottom: '10px',
+        textAlign: 'center', // Center-align the input within its container
+    },
+    searchInput: {
+        width: '20%', // Make the search bar shorter
+        padding: '10px',
+        borderRadius: '5px',
+        border: '1px solid #ccc',
+        fontSize: '16px',
+        display: 'inline-block', // Keep it inline with the button
+    },
+    searchButton: {
+        backgroundColor: '#007bff',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '5px',
+        padding: '10px 20px',
+        cursor: 'pointer',
+        fontSize: '20px',
+        display: 'inline-block', // Align with the input
+        marginTop: '10px',
+        marginLeft: '10px', // Adjust the margin to move it more to the left
+    },
+    questionList: {
+        marginTop: '20px',
+    },
+    noQuestionsText: {
+        fontSize: '25px',
+        color: '#666',
+        textAlign: 'center',
+        marginTop: '20px',
     },
 
 };

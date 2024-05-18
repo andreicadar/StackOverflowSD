@@ -75,27 +75,27 @@ function Question({ id, author, title, text, creationTime, tags, score, onDelete
         answerButton: {
             position: 'absolute',
             bottom: '10px',
-            right: '200px',
+            right: '240px',
             backgroundColor: '#1170da',
             color: 'white',
             border: 'none',
             borderRadius: '5px',
             padding: '10px 20px',
             cursor: 'pointer',
-            fontSize: '16px',
+            fontSize: '20px',
             lineHeight: '1',
         },
         editButton: {
             position: 'absolute',
             bottom: '10px',
-            right: '125px',
+            right: '150px',
             backgroundColor: '#f1ac2d',
             color: 'white',
             border: 'none',
             borderRadius: '5px',
             padding: '10px 20px',
             cursor: 'pointer',
-            fontSize: '16px',
+            fontSize: '20px',
             lineHeight: '1',
         },
         deleteButton: {
@@ -108,7 +108,7 @@ function Question({ id, author, title, text, creationTime, tags, score, onDelete
             borderRadius: '5px',
             padding: '10px 20px',
             cursor: 'pointer',
-            fontSize: '16px',
+            fontSize: '20px',
             lineHeight: '1',
         }
     };
@@ -136,7 +136,7 @@ function Question({ id, author, title, text, creationTime, tags, score, onDelete
             <div style={styles.score}>Score: {score}</div>
             <button style={styles.editButton} onClick={onEdit}>✏️</button>
             <button style={styles.deleteButton} onClick={onDelete}>DELETE</button>
-            <button style={styles.answerButton} onClick={() => onPostAnswer(id)}>Post an Answer</button>
+            <button style={styles.answerButton} onClick={() => onPostAnswer(id)}>Post an answer</button>
 
         </div>
     );

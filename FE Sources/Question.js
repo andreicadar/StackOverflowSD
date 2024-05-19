@@ -194,13 +194,10 @@ function Question({username, token, id, author, title, text, creationTime, tags,
 
     const handleUpvote = async () => {
         try {
-            console.log(id);
-            console.log(username);
-            console.log(token);
-
             await upvoteQuestion(username, id, token);
 
             setQuestionVoteState(1);
+
             const question = await getQuestionByID(username, id, token);
             setInternalScore(question.score)
             setErrorMessage('')

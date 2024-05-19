@@ -12,9 +12,9 @@ public class EmailService {
     private JavaMailSender emailSender;
 
     public void sendSimpleMessage(
-            /*String to, String subject, String text*/) {
+            String to /*String subject, String text*/) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo("cadarandrei2370@yahoo.com");
+        message.setTo(to);
         message.setSubject("Ai fost banat vere");
         message.setText("Ceva prostii ai facut tu pe acolo");
         emailSender.send(message);

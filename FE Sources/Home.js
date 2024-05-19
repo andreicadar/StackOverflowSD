@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {
+    deleteAnswer, deleteQuestion, deleteUser,
     getAnswersOfUser,
     getQuestionsOfUser,
     getUserByUsername,
@@ -11,6 +12,8 @@ import Question from "./Question";
 import Answer from "./Answer";
 import * as PropTypes from "prop-types";
 import {Navigate} from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
+
 
 function Redirect(props) {
     return null;
@@ -32,6 +35,8 @@ function Home({username, token}) {
     const [titleToSearchFor, setTitleToSearchFor] = useState('');
     const [searchQuestionButtonWasPressed, setSearchQuestionButtonWasPressed] = useState(false);
     const [seeQuestionDetailsBoolean, setSeeQuestionDetailsBoolean] = useState(false);
+    const navigate = useNavigate();
+
     const [questionFormData, setQuestionFormData] = useState({
         title: '',
         text: '',
@@ -199,27 +204,67 @@ function Home({username, token}) {
 
     }
 
-    function handleUserDelete() {
-
+    async function handleUserDelete() {
+        try {
+            setSuccessMessage('User deleted successfully.')
+            await deleteUser(username, token);
+            console.log("Redirecting to login...");
+            setTimeout(() => {
+                navigate('/login');
+            }, 2000);
+            return <Navigate to="/login"/>;
+        }
+        catch (error){
+            setErrorMessage('Error deleting user. Please try again later.');
+        }
     }
 
     function handleAnswerEdit(id) {
     }
 
-    function handleAnswerDelete(id) {
+    async function handleAnswerDelete(id) {
+        try{
+            await deleteAnswer(username, id, token);
+            setSuccessMessage('Answer deleted successfully.');
+            setTimeout(() => {
+                setSuccessMessage('');
+            }, 5000);
+            if(seeQuestionDetailsBoolean){
+                await handleSeeQuestionDetailsButton(questionIDToAnswer);
+            }
+            else if(showAnswers)
+            {
+                await fetchAnswers();
+            }
+        }
+        catch (error) {
+            setErrorMessage('Error deleting answer. Please try again later.');
+        }
+    }
+
+    async function handleQuestionEdit(id) {
 
     }
 
-    function handleQuestionEdit(id) {
-
+    async function handleQuestionDelete(id) {
+        try {
+            await deleteQuestion(username, id, token);
+            setSuccessMessage('Question deleted successfully.');
+            setTimeout(() => {
+                setSuccessMessage('');
+            }, 5000);
+            if (seeQuestionDetailsBoolean) {
+                fetchSearchedQuestions();
+            } else if (showQuestions) {
+                await fetchQuestions();
+            }
+        } catch (error) {
+            setErrorMessage('Error question answer. Please try again later.');
+        }
     }
 
-    function handleQuestionDelete(id) {
 
-    }
-
-
-    async function handlePostAnswer(event) {
+    async function handlePostAnswer(event, id) {
         event.preventDefault();
         try {
             const {text, image} = answerFormData;
@@ -229,7 +274,7 @@ function Home({username, token}) {
             setTimeout(() => {
                 setSuccessMessage('');
             }, 5000);
-            await fetchAnswers();
+            await handleSeeQuestionDetailsButton(id);
 
         } catch (error) {
             if (error.response && error.response.data && error.response.data.error) {
@@ -348,7 +393,7 @@ function Home({username, token}) {
                         <div style={{textAlign: 'center'}}> {}
                             <button style={styles.userInfoEditButton} onClick={() => handleUserEdit()}>✏️</button>
 
-                            <button style={styles.deleteButtonStyle} onClick={() => handleUserEdit()}>DELETE</button>
+                            <button style={styles.deleteButtonStyle} onClick={() => handleUserDelete()}>DELETE</button>
 
                         </div>
 
@@ -460,7 +505,7 @@ function Home({username, token}) {
                                 />
                             )}
                             <h2>Post an Answer</h2>
-                            <form onSubmit={handlePostAnswer}>
+                            <form onSubmit={(event) => handlePostAnswer(event, selectedQuestion.id)}>
                                 <label style={styles.formLabel}>Text:</label>
                                 <textarea
                                     style={styles.formTextarea}
@@ -484,8 +529,8 @@ function Home({username, token}) {
                     <div>
                         <h1 style={styles.title}>My Answers</h1>
                         {answers.map(answer => (
-                            <Answer username={username} key={answer.id} onDelete={handleAnswerDelete(answer.id)}
-                                    onEdit={handleAnswerDelete(answer.id)} {...answer} />
+                            <Answer username={username} token={token} key={answer.id} onDelete={() => handleAnswerDelete(answer.id)}
+                                    onEdit={() => handleAnswerDelete(answer.id)} {...answer} />
                         ))}
                     </div>
                 )}

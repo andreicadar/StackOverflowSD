@@ -287,3 +287,133 @@ export const getQuestionByID = async (username, questionID, token) => {
         throw error;
     }
 }
+
+export const upvoteAnswer = async (username, answerID, token) => {
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Add Authorization header with token
+            }
+        };
+        const response = await axios.get(`${BASE_URL}/upvoteAnswer?username=${username}&answerID=${answerID}`, config);
+
+        if (response.status !== 200) {
+            throw new Error(`Failed to upvote answer. Status: ${response.status}`);
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error('Error upvoting answer:', error);
+        throw error;
+    }
+}
+
+export const downvoteAnswer = async (username, answerID, token) => {
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Add Authorization header with token
+            }
+        };
+        const response = await axios.get(`${BASE_URL}/downvoteAnswer?username=${username}&answerID=${answerID}`, config);
+
+        if (response.status !== 200) {
+            throw new Error(`Failed to downvote answer. Status: ${response.status}`);
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error('Error downvoting answer:', error);
+        throw error;
+    }
+}
+
+export const getAnswerByID = async (username, answerID, token) => {
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Add Authorization header with token
+            }
+        };
+        const response = await axios.get(`${BASE_URL}/getAnswerByID?username=${username}&answerID=${answerID}`, config);
+
+        if (response.status !== 200) {
+            throw new Error(`Failed to get question. Status: ${response.status}`);
+        }
+
+        return response.data;
+    }
+    catch (error) {
+        console.error('Error getting question:', error);
+        throw error;
+    }
+}
+
+export const deleteAnswer = async (username, answerID, token) => {
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Add Authorization header with token
+            }
+        };
+        const response = await axios.get(`${BASE_URL}/deleteAnswer?username=${username}&answerID=${answerID}`, config);
+
+        if (response.status !== 200) {
+            throw new Error(`Failed to delete answer. Status: ${response.status}`);
+        }
+
+        return response.data;
+        }
+    catch (error) {
+        console.error('Error deleting answer:', error);
+        throw error;
+    }
+}
+
+export const deleteQuestion = async (username, questionID, token) => {
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Add Authorization header with token
+            }
+        };
+        const response = await axios.get(`${BASE_URL}/deleteQuestion?username=${username}&questionID=${questionID}`, config);
+
+        if (response.status !== 200) {
+            throw new Error(`Failed to delete question. Status: ${response.status}`);
+        }
+
+        return response.data;
+    }
+    catch (error) {
+        console.error('Error deleting question:', error);
+        throw error;
+    }
+}
+
+export const deleteUser = async (username, token) => {
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Add Authorization header with token
+            }
+        };
+        const response = await axios.get(`${BASE_URL}/deleteUser?username=${username}`, config);
+
+        if (response.status !== 200) {
+            throw new Error(`Failed to delete user. Status: ${response.status}`);
+        }
+
+        return response.data;
+    }
+    catch (error) {
+        console.error('Error deleting user:', error);
+        throw error;
+    }
+}

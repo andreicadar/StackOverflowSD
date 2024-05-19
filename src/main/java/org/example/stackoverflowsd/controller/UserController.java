@@ -23,6 +23,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/user")
+@CrossOrigin("*")
 public class UserController{
 
     @Autowired
@@ -145,7 +146,7 @@ public class UserController{
         }
     }
 
-    @PostMapping("/deleteUser")
+    @GetMapping("/deleteUser")
     public ResponseEntity<String> deleteUser(@RequestHeader("Authorization") String token, @RequestParam String username) {
         if(checkIfUserMatchesToken(token, username) == 1) {
             if(userService.deleteUser(username) == 1) {
@@ -190,7 +191,7 @@ public class UserController{
         }
     }
 
-    @PostMapping("/deleteQuestion")
+    @GetMapping("/deleteQuestion")
     public ResponseEntity<String> deleteQuestion(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam Long questionID) {
         if(checkIfUserMatchesToken(token, username) == 1) {
             int result = userService.deleteQuestion(username, questionID);
@@ -355,7 +356,7 @@ public class UserController{
         }
     }
 
-    @PostMapping("/deleteAnswer")
+    @GetMapping("/deleteAnswer")
     public ResponseEntity<String> deleteAnswer(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam Long answerID) {
         if(checkIfUserMatchesToken(token, username) == 1) {
             int result = userService.deleteAnswer(username, answerID);
@@ -373,7 +374,7 @@ public class UserController{
         }
     }
 
-    @PostMapping("/upvoteAnswer")
+    @GetMapping("/upvoteAnswer")
     public ResponseEntity<String> upvoteAnswer(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int answerID) {
         if(checkIfUserMatchesToken(token, username) == 1) {
             int result = userService.upvoteAnswer(username, answerID);
@@ -392,7 +393,7 @@ public class UserController{
         }
     }
 
-    @PostMapping("/downvoteAnswer")
+    @GetMapping("/downvoteAnswer")
     public ResponseEntity<String> downvoteAnswer(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int answerID) {
         if(checkIfUserMatchesToken(token, username) == 1) {
             int result = userService.downvoteAnswer(username, answerID);
@@ -432,7 +433,8 @@ public class UserController{
         if(checkIfUserMatchesToken(token, username) == 1) {
             int result = userService.banUser(username, userToBan);
             if(result == 1) {
-                emailService.sendSimpleMessage();
+                User user = userService.getUserByUsername(userToBan);
+                emailService.sendSimpleMessage(user.getEmail());
                 return ResponseEntity.ok("User banned successfully");
             }
             else if(result == 2){

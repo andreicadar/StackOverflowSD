@@ -250,17 +250,22 @@ public class UserController{
         }
     }
 
-    @PostMapping("/upvoteQuestion")
+    @GetMapping("/upvoteQuestion")
     public ResponseEntity<String> upvoteQuestion(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int questionID) {
+        System.out.println("Upvote question222222");
+        System.out.println(token);
         if(checkIfUserMatchesToken(token, username) == 1) {
+            System.out.println("Upvote question");
             int result = userService.upvoteQuestion(username, questionID);
             if(result== 1) {
                 return ResponseEntity.ok("Question upvoted successfully");
             }
             else if(result == 2) {
+                System.out.println("Question already upvoted");
                 return ResponseEntity.badRequest().body("Question already upvoted");
             }
             else {
+                System.out.println("Cannot vote own question");
                 return ResponseEntity.badRequest().body("Cannot vote own question");
             }
         }
@@ -269,7 +274,7 @@ public class UserController{
         }
     }
 
-    @PostMapping("/downvoteQuestion")
+    @GetMapping("/downvoteQuestion")
     public ResponseEntity<String> downvoteQuestion(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam int questionID) {
         if(checkIfUserMatchesToken(token, username) == 1) {
             int result = userService.downvoteQuestion(username, questionID);

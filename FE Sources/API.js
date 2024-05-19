@@ -220,3 +220,70 @@ export const seeQuestionDetails = async (username, questionID, token) => {
         throw error;
     }
 }
+
+export const upvoteQuestion = async (username, questionID, token) => {
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Add Authorization header with token
+            }
+        };
+        console.log()
+        const response = await axios.get(`${BASE_URL}/upvoteQuestion?username=${username}&questionID=${questionID}`, config);
+        console.log(response.data);
+        if (response.status !== 200) {
+            throw new Error(`Failed to upvote question. Status: ${response.status}`);
+        }
+
+        return response.data;
+    }
+    catch (error) {
+        console.error('Error upvoting question:', error);
+        throw error;
+    }
+}
+
+export const downvoteQuestion = async (username, questionID, token) => {
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Add Authorization header with token
+            }
+        };
+        const response = await axios.get(`${BASE_URL}/downvoteQuestion?username=${username}&questionID=${questionID}`, config);
+
+        if (response.status !== 200) {
+            throw new Error(`Failed to downvote question. Status: ${response.status}`);
+        }
+
+        return response.data;
+    }
+    catch (error) {
+        console.error('Error downvoting question:', error);
+        throw error;
+    }
+}
+
+export const getQuestionByID = async (username, questionID, token) => {
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Add Authorization header with token
+            }
+        };
+        const response = await axios.get(`${BASE_URL}/getQuestionByID?username=${username}&questionID=${questionID}`, config);
+
+        if (response.status !== 200) {
+            throw new Error(`Failed to get question. Status: ${response.status}`);
+        }
+
+        return response.data;
+    }
+    catch (error) {
+        console.error('Error getting question:', error);
+        throw error;
+    }
+}

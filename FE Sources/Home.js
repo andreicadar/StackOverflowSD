@@ -276,6 +276,7 @@ function Home({username, token}) {
     }
 
     async function handleSeeQuestionDetailsButton(id) {
+        console.log("aaaaaaaaaaaaaaaaaaaaaaa");
         setQuestionIDToAnswer(id);
         setSeeQuestionDetailsBoolean(true);
         setShowSearchQuestions(false);
@@ -378,6 +379,7 @@ function Home({username, token}) {
                                         onEdit={() => handleQuestionEdit(question.id)}
                                         onSeeQuestionDetails={() => handleSeeQuestionDetailsButton(question.id)}
                                         comesFromQuestionDetails={false}
+                                        token={token}
                                     />
                                 ))
                             ) : (
@@ -434,6 +436,7 @@ function Home({username, token}) {
                                 onEdit={() => handleQuestionEdit(question.id)}
                                 onSeeQuestionDetails={() => handleSeeQuestionDetailsButton(question.id)}
                                 comesFromQuestionDetails={false}
+                                token={token}
                             />
                         ))}
                     </div>
@@ -453,6 +456,7 @@ function Home({username, token}) {
                                     onEdit={() => handleQuestionEdit(selectedQuestion.id)}
                                     onSeeQuestionDetails={() => handleSeeQuestionDetailsButton(selectedQuestion.id)}
                                     comesFromQuestionDetails={false}
+                                    token={token}
                                 />
                             )}
                             <h2>Post an Answer</h2>
@@ -497,6 +501,7 @@ function Home({username, token}) {
                         onEdit={() => handleQuestionEdit(questionToBeDetailed.id)}
                         onSeeQuestionDetails={() => handleSeeQuestionDetailsButton(questionToBeDetailed.id)}
                         comesFromQuestionDetails={true}
+                        token={token}
                     />
                     {answers.length > 0 && (
                         <div style={styles.answersContainer}>

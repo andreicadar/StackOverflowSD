@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
+import {downvoteQuestion, getQuestionByID, seeQuestionDetails, upvoteQuestion} from "./API";
 
-function Question({username, id, author, title, text, creationTime, tags, score, onDelete, onEdit, pictureBase64, onPostAnswer, onSeeQuestionDetails, comesFromQuestionDetails }) {
+function Question({username, token, id, author, title, text, creationTime, tags, score, onDelete, onEdit, pictureBase64, onPostAnswer, onSeeQuestionDetails, comesFromQuestionDetails }) {
     const [isClicked, setIsClicked] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
+    const [isHoveredAnotherButton, setIsHoveredAnotherButton] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [questionVoteState, setQuestionVoteState] = useState(0);
+    const[internalScore, setInternalScore] = useState(score);
+
 
     const handleMouseDown = () => {
         setIsClicked(true);
@@ -32,7 +38,7 @@ function Question({username, id, author, title, text, creationTime, tags, score,
             padding: '20px',
             margin: '20px 0',
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-            backgroundColor: isHovered && !isClicked ? '#eaeaea' : isClicked ? '#d1d1d1' : '#fff',
+            backgroundColor: isHovered && !isClicked && !isHoveredAnotherButton ? '#eaeaea' : isClicked && !isHoveredAnotherButton ? '#d1d1d1' : '#fff',
             position: 'relative',
             cursor: 'pointer',
             transition: 'background-color 0.2s ease',
@@ -141,6 +147,88 @@ function Question({username, id, author, title, text, creationTime, tags, score,
             lineHeight: '1',
             display: author === username ? 'block' : 'none',
         },
+        voteButtonsContainer: {
+            position: 'absolute',
+            top: '10px',
+            right: '20px',
+            display: author !== username ? 'block' : 'none',
+            zIndex: '1', // Ensure it's above other content
+        },
+        upvoteButton: {
+            backgroundColor: questionVoteState === 1 ? '#b5e18f' : '#dddddd',
+            border: 'none',
+            borderRadius: '50%',
+            width: '60px',
+            height: '60px',
+            textAlign: 'center',
+            lineHeight: '30px',
+            cursor: 'pointer',
+            marginBottom: '25px', // Adjusted margin for spacing between buttons
+            display: 'block', // Ensure they appear one below the other
+            fontSize: '24px',
+        },
+        downvoteButton: {
+            backgroundColor: questionVoteState === -1 ? '#f8d7da' : '#ddd',
+            border: 'none',
+            borderRadius: '50%',
+            width: '60px',
+            height: '60px',
+            textAlign: 'center',
+            lineHeight: '30px',
+            cursor: 'pointer',
+            marginBottom: '25px', // Adjusted margin for spacing between buttons
+            display: 'block', // Ensure they appear one below the other
+            fontSize: '24px',
+        },
+        errorMessage: {
+            backgroundColor: '#f8d7da',
+            color: '#721c24',
+            borderRadius: '5px',
+            padding: '10px',
+            fontSize: '18px',
+            textAlign: 'center',
+            width: '100%',
+            marginBottom: '20px'
+        },
+    };
+
+    const handleUpvote = async () => {
+        try {
+            console.log(id);
+            console.log(username);
+            console.log(token);
+
+            await upvoteQuestion(username, id, token);
+
+            setQuestionVoteState(1);
+            const question = await getQuestionByID(username, id, token);
+            setInternalScore(question.score)
+            setErrorMessage('')
+        }
+        catch (error) {
+            console.error('Error upvoting question:', error);
+            setErrorMessage('You already upvoted this question');
+            setTimeout(() => {
+                setErrorMessage('');
+            }, 5000);
+        }
+
+    };
+
+    const handleDownvote = async () => {
+        try {
+            await downvoteQuestion(username, id, token);
+            setQuestionVoteState(-1);
+            const question = await getQuestionByID(username, id, token);
+            setInternalScore(question.score)
+            setErrorMessage('')
+        } catch (error) {
+            console.error('Error downvoting question:', error);
+            setErrorMessage('You already downvoted this question');
+            setTimeout(() => {
+                setErrorMessage('');
+            }, 5000);
+        }
     };
 
     const tagsArray = tags ? tags.split(', ') : [];
@@ -155,6 +243,22 @@ function Question({username, id, author, title, text, creationTime, tags, score,
             onMouseUp={handleMouseUp}
             onClick={() => onSeeQuestionDetails(id)}
         >
+
+            {errorMessage && (
+                <div style={styles.errorMessage}>
+                    {errorMessage}
+                </div>
+            )}
+
+            {/* Vote buttons */}
+            <div style={styles.voteButtonsContainer}>
+                <button style={styles.upvoteButton} onMouseEnter={() => setIsHoveredAnotherButton(true)}
+                        onMouseLeave={() => setIsHoveredAnotherButton(false)} onClick={(e) => { e.stopPropagation(); handleUpvote(); }} >▲</button>
+                <button style={styles.downvoteButton} onMouseEnter={() => setIsHoveredAnotherButton(true)}
+                        onMouseLeave={() => setIsHoveredAnotherButton(false)} onClick={(e) => { e.stopPropagation(); handleDownvote(); }}>▼</button>
+            </div>
+
+            {/* Rest of the content */}
             <div style={styles.header}>
                 <div style={styles.title}>{title}</div>
                 <div style={styles.meta}>Asked by <span style={styles.author}>{author}</span> on {creationTime}</div>
@@ -170,24 +274,24 @@ function Question({username, id, author, title, text, creationTime, tags, score,
                     <div key={index} style={styles.tag}>{tag}</div>
                 ))}
             </div>
-            <div style={styles.score}>Score: {score}</div>
+            <div style={styles.score}>Score: {internalScore}</div>
 
-            <button style={styles.answerButton} onMouseEnter={() => setIsHovered(false)}
-                    onMouseLeave={() => setIsHovered(true)} onClick={(e) => {
+            <button style={styles.answerButton} onMouseEnter={() => setIsHoveredAnotherButton(true)}
+                    onMouseLeave={() => setIsHoveredAnotherButton(false)} onClick={(e) => {
                 e.stopPropagation();
                 onPostAnswer(id);
             }}>Post an answer
             </button>
 
-            <button style={styles.editButton} onMouseEnter={() => setIsHovered(false)}
-                    onMouseLeave={() => setIsHovered(true)} onClick={(e) => {
+            <button style={styles.editButton} onMouseEnter={() => setIsHoveredAnotherButton(true)}
+                    onMouseLeave={() => setIsHoveredAnotherButton(false)} onClick={(e) => {
                 e.stopPropagation();
                 onEdit();
             }}>✏️
             </button>
 
-            <button style={styles.deleteButton} onMouseEnter={() => setIsHovered(false)}
-                    onMouseLeave={() => setIsHovered(true)} onClick={(e) => {
+            <button style={styles.deleteButton} onMouseEnter={() => setIsHoveredAnotherButton(true)}
+                    onMouseLeave={() => setIsHoveredAnotherButton(false)} onClick={(e) => {
                 e.stopPropagation();
                 onDelete();
             }}>Delete

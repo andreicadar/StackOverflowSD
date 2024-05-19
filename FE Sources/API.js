@@ -197,3 +197,26 @@ export const searchQuestions = async (username, titleQuery, token) => {
     }
 
 }
+
+export const seeQuestionDetails = async (username, questionID, token) => {
+
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Add Authorization header with token
+            }
+        };
+        const response = await axios.get(`${BASE_URL}/getQuestionDetails?username=${username}&questionID=${questionID}`, config); // Add questionID parameter to the URL
+
+        if (response.status !== 200) {
+            throw new Error(`Failed to see question details. Status: ${response.status}`);
+        }
+
+        return response.data;
+    }
+    catch (error) {
+        console.error('Error seeing question details:', error);
+        throw error;
+    }
+}

@@ -5,7 +5,7 @@ import {
     getUserByUsername,
     postAnswerToQuestion,
     postQuestion,
-    searchQuestions
+    searchQuestions, seeQuestionDetails
 } from "./API";
 import Question from "./Question";
 import Answer from "./Answer";
@@ -18,8 +18,9 @@ function Redirect(props) {
 
 Redirect.propTypes = {to: PropTypes.string};
 
-function Home({ username, token }) {
+function Home({username, token}) {
     const [questions, setQuestions] = useState([]);
+    const [questionToBeDetailed, setQuestionToBeDetailed] = useState(null);
     const [answers, setAnswers] = useState([]);
     const [errorMessage, setErrorMessage] = useState('');
     const [showQuestionForm, setShowQuestionForm] = useState(false);
@@ -30,6 +31,7 @@ function Home({ username, token }) {
     const [showSearchQuestions, setShowSearchQuestions] = useState(false);
     const [titleToSearchFor, setTitleToSearchFor] = useState('');
     const [searchQuestionButtonWasPressed, setSearchQuestionButtonWasPressed] = useState(false);
+    const [seeQuestionDetailsBoolean, setSeeQuestionDetailsBoolean] = useState(false);
     const [questionFormData, setQuestionFormData] = useState({
         title: '',
         text: '',
@@ -47,8 +49,7 @@ function Home({ username, token }) {
 
         if (!username || !token) {
             setRedirectToLogin(true);
-        }
-        else {
+        } else {
             // Fetch questions when username or token changes
             fetchQuestions().then(r => console.log('Questions fetched')).catch(e => console.error('Error fetching questions:', e));
         }
@@ -57,7 +58,7 @@ function Home({ username, token }) {
     if (redirectToLogin) {
         console.log("Redirecting to login...");
 
-        return <Navigate to="/login" />;
+        return <Navigate to="/login"/>;
     }
 
     const fetchUserInformation = async () => {
@@ -71,6 +72,7 @@ function Home({ username, token }) {
 
     const handleUsernameClick = () => {
         fetchUserInformation();
+        setSeeQuestionDetailsBoolean(false);
         setShowSearchQuestions(false);
         setShowQuestionForm(false);
         setShowQuestions(false);
@@ -85,6 +87,7 @@ function Home({ username, token }) {
     const fetchQuestions = async () => {
         try {
             const response = await getQuestionsOfUser(username, token);
+            setSeeQuestionDetailsBoolean(false);
             setShowSearchQuestions(false);
             setQuestions(response);
             setShowQuestionForm(false);
@@ -102,6 +105,7 @@ function Home({ username, token }) {
     const fetchSearchedQuestions = async () => {
         try {
             const response = await searchQuestions(username, titleToSearchFor, token);
+            setSeeQuestionDetailsBoolean(false);
             setSearchQuestionButtonWasPressed(true);
             setShowSearchQuestions(true);
             setQuestions(response);
@@ -120,10 +124,10 @@ function Home({ username, token }) {
     const handlePostQuestion = async (event) => {
         event.preventDefault();
         try {
-            const { title, text, tags, image } = questionFormData;
+            const {title, text, tags, image} = questionFormData;
             await postQuestion(username, token, image, title, text, tags.join(', '));
 
-            setQuestionFormData({ title: '', text: '', tags: [], image: null });
+            setQuestionFormData({title: '', text: '', tags: [], image: null});
             setSuccessMessage('Question posted successfully.');
             setTimeout(() => {
                 setSuccessMessage('');
@@ -141,23 +145,23 @@ function Home({ username, token }) {
     const handleTagChange = (e, index) => {
         const newTags = [...questionFormData.tags];
         newTags[index] = e.target.value;
-        setQuestionFormData({ ...questionFormData, tags: newTags });
+        setQuestionFormData({...questionFormData, tags: newTags});
     };
 
     const handleAddTag = () => {
         if (questionFormData.tags.length === 0 || questionFormData.tags[questionFormData.tags.length - 1].trim() !== '') {
-            setQuestionFormData({ ...questionFormData, tags: [...questionFormData.tags, ''] });
+            setQuestionFormData({...questionFormData, tags: [...questionFormData.tags, '']});
         }
     };
 
     const handleImageChangeQuestionForm = (e) => {
         const file = e.target.files[0];
-        setQuestionFormData({ ...questionFormData, image: file });
+        setQuestionFormData({...questionFormData, image: file});
     };
 
     const handleImageChangeAnswerForm = (e) => {
         const file = e.target.files[0];
-        setAnswerFormData({ ...answerFormData, image: file });
+        setAnswerFormData({...answerFormData, image: file});
     };
 
 
@@ -166,6 +170,7 @@ function Home({ username, token }) {
         try {
 
             const userAnswers = await getAnswersOfUser(username, token);
+            setSeeQuestionDetailsBoolean(false);
             setShowSearchQuestions(false);
             setAnswers(userAnswers);
             setShowAnswers(true);
@@ -180,6 +185,7 @@ function Home({ username, token }) {
     };
 
     const handleSeeMyAnswers = async () => {
+        setSeeQuestionDetailsBoolean(false);
         setShowSearchQuestions(false);
         setShowQuestionForm(false);
         setShowUserInfo(false);
@@ -188,12 +194,12 @@ function Home({ username, token }) {
         setErrorMessage('');
         await fetchAnswers();
     };
+
     function handleUserEdit() {
 
     }
 
-    function handleUserDelete()
-    {
+    function handleUserDelete() {
 
     }
 
@@ -225,8 +231,7 @@ function Home({ username, token }) {
             }, 5000);
             await fetchAnswers();
 
-        }
-        catch (error) {
+        } catch (error) {
             if (error.response && error.response.data && error.response.data.error) {
                 setErrorMessage(error.response.data.error);
             } else {
@@ -236,9 +241,9 @@ function Home({ username, token }) {
 
     }
 
-    function handlePostAnAnswerButton(id)
-    {
+    function handlePostAnAnswerButton(id) {
         setQuestionIDToAnswer(id);
+        setSeeQuestionDetailsBoolean(false);
         setShowSearchQuestions(false);
         setShowQuestionForm(false);
         setShowAnswers(false);
@@ -249,6 +254,7 @@ function Home({ username, token }) {
 
     function handlePostAQuestionButton() {
         setShowSearchQuestions(false);
+        setSeeQuestionDetailsBoolean(false);
         setShowQuestionForm(true);
         setShowAnswers(false);
         setShowUserInfo(false);
@@ -266,6 +272,28 @@ function Home({ username, token }) {
         setShowUserInfo(false);
         setShowQuestions(false);
         setShowAnswersForm(false);
+        setSeeQuestionDetailsBoolean(false);
+    }
+
+    async function handleSeeQuestionDetailsButton(id) {
+        setQuestionIDToAnswer(id);
+        setSeeQuestionDetailsBoolean(true);
+        setShowSearchQuestions(false);
+        setShowQuestionForm(false);
+        setShowAnswers(false);
+        setShowUserInfo(false);
+        setShowQuestions(false);
+        setShowAnswersForm(false);
+
+        try {
+            const questionDetails = await seeQuestionDetails(username, id, token);
+
+            setQuestionToBeDetailed(questionDetails.question);
+
+            setAnswers(questionDetails.answers);
+        } catch (error) {
+            setErrorMessage('Error fetching question details. Please try again later.');
+        }
     }
 
     return (
@@ -330,24 +358,32 @@ function Home({ username, token }) {
                     <div style={styles.searchContainer}>
                         <h2 style={styles.title}>Search Questions</h2>
                         <div style={styles.searchInputContainer}>
-                            <input style={styles.searchInput} type="text" placeholder="Title to search for" value={titleToSearchFor} onChange={(e) => {setTitleToSearchFor(e.target.value); setSearchQuestionButtonWasPressed(false)}} />
-                            <br />
+                            <input style={styles.searchInput} type="text" placeholder="Title to search for"
+                                   value={titleToSearchFor} onChange={(e) => {
+                                setTitleToSearchFor(e.target.value);
+                                setSearchQuestionButtonWasPressed(false)
+                            }}/>
+                            <br/>
                             <button style={styles.searchButton} onClick={fetchSearchedQuestions}>Search</button>
                         </div>
                         <div style={styles.questionList}>
                             {questions.length > 0 ? (
                                 questions.map(question => (
                                     <Question
+                                        username={username}
                                         key={question.id}
                                         onPostAnswer={handlePostAnAnswerButton}
                                         {...question}
                                         onDelete={() => handleQuestionDelete(question.id)}
                                         onEdit={() => handleQuestionEdit(question.id)}
+                                        onSeeQuestionDetails={() => handleSeeQuestionDetailsButton(question.id)}
+                                        comesFromQuestionDetails={false}
                                     />
                                 ))
                             ) : (
                                 searchQuestionButtonWasPressed && (
-                                    <p style={styles.noQuestionsText}>No questions found. Please try a different search.</p>
+                                    <p style={styles.noQuestionsText}>No questions found. Please try a different
+                                        search.</p>
                                 )
                             )}
                         </div>
@@ -357,60 +393,132 @@ function Home({ username, token }) {
 
                 {showQuestionForm && (
                     <div style={styles.formContainer}>
-                        <h2>Post a Question</h2>
+                        <h1 style={styles.title}>Post a Question</h1>
                         <form onSubmit={handlePostQuestion}>
                             <label style={styles.formLabel}>Title:</label>
-                            <input style={styles.formInput} type="text" value={questionFormData.title} onChange={(e) => setQuestionFormData({ ...questionFormData, title: e.target.value })} /><br />
+                            <input style={styles.formInput} type="text" value={questionFormData.title}
+                                   onChange={(e) => setQuestionFormData({...questionFormData, title: e.target.value})}/><br/>
                             <label style={styles.formLabel}>Text:</label>
-                            <textarea style={styles.formTextarea} value={questionFormData.text} onChange={(e) => setQuestionFormData({ ...questionFormData, text: e.target.value })}></textarea><br />
+                            <textarea style={styles.formTextarea} value={questionFormData.text}
+                                      onChange={(e) => setQuestionFormData({
+                                          ...questionFormData,
+                                          text: e.target.value
+                                      })}></textarea><br/>
                             <label style={styles.formLabel}>Tags:</label>
                             <div style={styles.tagContainer}>
                                 {questionFormData.tags.map((tag, index) => (
                                     <div key={index} style={styles.tag}>
-                                        <input style={styles.formTagInput} type="text" value={tag} onChange={(e) => handleTagChange(e, index)} />
+                                        <input style={styles.formTagInput} type="text" value={tag}
+                                               onChange={(e) => handleTagChange(e, index)}/>
                                     </div>
                                 ))}
                                 <button style={styles.formTagButton} type="button" onClick={handleAddTag}>+</button>
                             </div>
                             <label style={styles.formLabel}>Image:</label>
-                            <input style={styles.formInput} type="file" accept="image/*" onChange={handleImageChangeQuestionForm} /><br />
+                            <input style={styles.formInput} type="file" accept="image/*"
+                                   onChange={handleImageChangeQuestionForm}/><br/>
                             <button style={styles.formButton} type="submit">Post Question</button>
                         </form>
                     </div>)}
+
                 {showQuestions && (
                     <div>
                         <h1 style={styles.title}>My Questions</h1>
                         {questions.map(question => (
                             <Question
+                                username={username}
                                 key={question.id}
                                 onPostAnswer={handlePostAnAnswerButton}
                                 {...question}
                                 onDelete={() => handleQuestionDelete(question.id)}
                                 onEdit={() => handleQuestionEdit(question.id)}
+                                onSeeQuestionDetails={() => handleSeeQuestionDetailsButton(question.id)}
+                                comesFromQuestionDetails={false}
                             />
                         ))}
                     </div>
                 )}
-                {showAnswersForm && (
-                    <div style={styles.formContainer}>
-                        <h2>Post an Answer</h2>
-                        <form onSubmit={handlePostAnswer}>
-                            <label style={styles.formLabel}>Text:</label>
-                            <textarea style={styles.formTextarea} value={answerFormData.text} onChange={(e) => setAnswerFormData({ ...answerFormData, text: e.target.value })}></textarea><br />
-                            <label style={styles.formLabel}>Image:</label>
-                            <input style={styles.formInput} type="file" accept="image/*" onChange={handleImageChangeAnswerForm} /><br />
-                            <button style={styles.formButton} type="submit">Post Answer</button>
-                        </form>
-                    </div>)}
+
+                {showAnswersForm && (() => {
+                    const selectedQuestion = questions.find(question => question.id === questionIDToAnswer);
+                    return (
+                        <div style={styles.formContainer}>
+                            {selectedQuestion && (
+                                <Question
+                                    username={username}
+                                    key={selectedQuestion.id}
+                                    {...selectedQuestion}
+                                    onPostAnswer={handlePostAnAnswerButton}
+                                    onDelete={() => handleQuestionDelete(selectedQuestion.id)}
+                                    onEdit={() => handleQuestionEdit(selectedQuestion.id)}
+                                    onSeeQuestionDetails={() => handleSeeQuestionDetailsButton(selectedQuestion.id)}
+                                    comesFromQuestionDetails={false}
+                                />
+                            )}
+                            <h2>Post an Answer</h2>
+                            <form onSubmit={handlePostAnswer}>
+                                <label style={styles.formLabel}>Text:</label>
+                                <textarea
+                                    style={styles.formTextarea}
+                                    value={answerFormData.text}
+                                    onChange={(e) => setAnswerFormData({...answerFormData, text: e.target.value})}
+                                ></textarea><br/>
+                                <label style={styles.formLabel}>Image:</label>
+                                <input
+                                    style={styles.formInput}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageChangeAnswerForm}
+                                /><br/>
+                                <button style={styles.formButton} type="submit">Post Answer</button>
+                            </form>
+                        </div>
+                    );
+                })()}
+
                 {showAnswers && (
                     <div>
                         <h1 style={styles.title}>My Answers</h1>
                         {answers.map(answer => (
-                            <Answer key={answer.id} onDelete={handleAnswerDelete(answer.id)}
+                            <Answer username={username} key={answer.id} onDelete={handleAnswerDelete(answer.id)}
                                     onEdit={handleAnswerDelete(answer.id)} {...answer} />
                         ))}
                     </div>
                 )}
+
+                {seeQuestionDetailsBoolean && questionToBeDetailed && (
+                <div style={styles.detailsContainer}>
+                    <Question
+                        username={username}
+                        key={questionToBeDetailed.id}
+                        {...questionToBeDetailed}
+                        onPostAnswer={handlePostAnAnswerButton}
+                        onDelete={() => handleQuestionDelete(questionToBeDetailed.id)}
+                        onEdit={() => handleQuestionEdit(questionToBeDetailed.id)}
+                        onSeeQuestionDetails={() => handleSeeQuestionDetailsButton(questionToBeDetailed.id)}
+                        comesFromQuestionDetails={true}
+                    />
+                    {answers.length > 0 && (
+                        <div style={styles.answersContainer}>
+                            <h2 style={styles.subtitle}>Answers</h2>
+                            {answers.map(answer => (
+                                <Answer
+                                    username={username}
+                                    key={answer.id}
+                                    onDelete={() => handleAnswerDelete(answer.id)}
+                                    onEdit={() => handleAnswerEdit(answer.id)}
+                                    {...answer}
+                                />
+                            ))}
+                        </div>
+                    )}
+                    {answers.length === 0 && (
+                        <p style={styles.noQuestionsText}>No answers for this question.</p>
+                    )}
+                </div>
+            )}
+
+
             </div>
         </div>
     );
@@ -535,8 +643,8 @@ const styles = {
         fontSize: '16px',
         flexShrink: 0,
         alignItems: 'center',
-        marginTop:10,
-    },errorMessage: {
+        marginTop: 10,
+    }, errorMessage: {
         backgroundColor: '#f8d7da',
         color: '#721c24',
         borderRadius: '5px',
@@ -556,7 +664,7 @@ const styles = {
         width: '100%',
         marginBottom: '20px'
     },
-    deleteButtonStyle :{
+    deleteButtonStyle: {
         backgroundColor: 'red',
         color: 'white',
         border: 'none',
@@ -591,7 +699,7 @@ const styles = {
         backgroundColor: '#f8f9fa', // Background color for contrast
         padding: '10px 20px', // Padding for better readability
         borderRadius: '8px', // Rounded corners for a modern look
-    },searchContainer: {
+    }, searchContainer: {
         backgroundColor: '#fff',
         padding: '20px',
         borderRadius: '8px',
@@ -630,7 +738,27 @@ const styles = {
         fontSize: '25px',
         color: '#666',
         textAlign: 'center',
-        marginTop: '20px',
+        marginTop: '40px',
+    },
+    detailsContainer: {
+        fontFamily: 'Arial, sans-serif',
+        padding: '20px',
+        margin: '20px 0',
+        borderRadius: '8px',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        backgroundColor: '#fff',
+    },
+    answersContainer: {
+        marginTop: '60px',
+        border: '1px solid #ddd',
+        borderRadius: '8px',
+        padding: '10px',
+    },
+    subtitle: {
+        fontWeight: 'bold',
+        fontSize: '20px',
+        color: '#444',
+        marginBottom: '10px',
     },
 
 };

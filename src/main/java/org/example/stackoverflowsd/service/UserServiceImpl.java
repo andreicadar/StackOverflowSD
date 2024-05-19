@@ -120,7 +120,27 @@ public class UserServiceImpl implements UserDetailsService {
     }
 
     public QuestionAnswers getQuestionDetails(Long questionID) {
-        return questionRepository.getQuestionDetails(questionID);
+        QuestionAnswers questionAnswers =  questionRepository.getQuestionDetails(questionID);
+            try {
+                byte[] fileContent = Files.readAllBytes(Paths.get(questionAnswers.question.getPicturePath()));
+                String encodedString = Base64.getEncoder().encodeToString(fileContent);
+                questionAnswers.question.setPictureBase64(encodedString);
+            } catch (IOException e) {
+                e.printStackTrace();
+                questionAnswers.question.setPictureBase64(null);
+            }
+
+        for (Answer answer : questionAnswers.answers) {
+            try {
+                byte[] fileContent = Files.readAllBytes(Paths.get(answer.getPicturePath()));
+                String encodedString = Base64.getEncoder().encodeToString(fileContent);
+                answer.setPictureBase64(encodedString);
+            } catch (IOException e) {
+                e.printStackTrace();
+                answer.setPictureBase64(null);
+            }
+        }
+        return questionAnswers;
     }
 
     public int deleteAnswer(String username, Long answerID) {

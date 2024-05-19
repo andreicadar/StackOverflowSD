@@ -317,6 +317,12 @@ public class QuestionRepository implements QuestionInterface {
                     rs.getInt("score"));
         });
 
+        for(Question question : questions) {
+            final String selectSql2 = "SELECT username FROM user WHERE id = ?";
+            String authorName = jdbcTemplate.queryForObject(selectSql2, String.class, question.getUserID());
+            question.setAuthor(authorName);
+        }
+
 
         if (tags != null) {
             String[] tagsArray = tags.split(",");

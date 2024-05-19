@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Answer({ text, creationTime, pictureBase64, score, questionID, author, onDelete, onEdit }) {
+function Answer({username, text, creationTime, pictureBase64, score, questionID, author, onDelete, onEdit }) {
     const styles = {
         container: {
             fontFamily: 'Arial, sans-serif',
@@ -18,6 +18,10 @@ function Answer({ text, creationTime, pictureBase64, score, questionID, author, 
             marginBottom: '10px',
             marginLeft: '10px'
         },
+        author: {
+            color: '#0074d9',
+            fontWeight: 'bold',
+        },
         meta: {
             fontSize: '18px',
             color: '#666',
@@ -27,7 +31,7 @@ function Answer({ text, creationTime, pictureBase64, score, questionID, author, 
         score: {
             fontWeight: 'bold',
             color: '#108ee9',
-            fontSize: '16px'
+            fontSize: '18px'
         },
         image: {
             maxHeight: '450px', // Set the desired height
@@ -51,7 +55,7 @@ function Answer({ text, creationTime, pictureBase64, score, questionID, author, 
         editButton: {
             position: 'absolute',
             bottom: '10px',
-            right: '150px',
+            right: '130px',
             backgroundColor: '#f1ac2d',
             color: 'white',
             border: 'none',
@@ -60,6 +64,7 @@ function Answer({ text, creationTime, pictureBase64, score, questionID, author, 
             cursor: 'pointer',
             fontSize: '20px',
             lineHeight: '1',
+            display: author === username ? 'block' : 'none',
         },
         deleteButton: {
             position: 'absolute',
@@ -86,10 +91,10 @@ function Answer({ text, creationTime, pictureBase64, score, questionID, author, 
             ) : (
                 <div style={styles.imagePlaceholder}>Picture Placeholder</div>
             )}
-            <div style={styles.meta}>Answered on {creationTime} by {author}</div>
+            <div style={styles.meta}>Answered by <span style={styles.author}>{author}</span> on {creationTime}</div>
             <div style={styles.score}>Score: {score}</div>
             <button style={styles.editButton} onClick={onEdit}>✏️</button>
-            <button style={styles.deleteButton} onClick={onDelete}>DELETE</button>
+            <button style={styles.deleteButton} onClick={onDelete}>Delete</button>
         </div>
     );
 }

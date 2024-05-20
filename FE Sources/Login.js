@@ -136,7 +136,7 @@ const styles = {
     },
     text: {
         marginBottom: '10px',
-        fontSize: '16px', // Increased font size
+        fontSize: '18px', // Increased font size
         color: '#555', // Dark gray color
         fontStyle: 'italic', // Italic font style
         textAlign: 'center', // Centered alignment

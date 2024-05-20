@@ -4,6 +4,7 @@ import org.example.stackoverflowsd.model.Answer;
 import org.example.stackoverflowsd.model.Question;
 import org.example.stackoverflowsd.model.QuestionAnswers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -209,11 +210,14 @@ public class QuestionRepository implements QuestionInterface {
 
             String uploadDir = "./images";
 
-            Path filePath = Paths.get(uploadDir, "Q" + question.getId() + "U" + authorFromID + image.getOriginalFilename().substring(image.getOriginalFilename().length() - 4));
-            Files.write(filePath, image.getBytes());
-
-            final String updatePicturePathSql = "UPDATE question SET picturePath = ? WHERE id = ?";
-            jdbcTemplate.update(updatePicturePathSql, filePath.toString(), question.getId());
+            if(image != null)
+            {
+                Path filePath = Paths.get(uploadDir, "Q" + question.getId() + "U" + authorFromID + image.getOriginalFilename().substring(image.getOriginalFilename().length() - 4));
+                Files.write(filePath, image.getBytes());
+    
+                final String updatePicturePathSql = "UPDATE question SET picturePath = ? WHERE id = ?";
+                jdbcTemplate.update(updatePicturePathSql, filePath.toString(), question.getId());
+            }
 
 
 
@@ -288,17 +292,21 @@ public class QuestionRepository implements QuestionInterface {
         }
         if (author != null) {
             final String selectUserSql = "SELECT id FROM user WHERE username = ?";
-            int authorID = jdbcTemplate.queryForObject(selectUserSql, Integer.class, author);
+            try {
+                int authorID = jdbcTemplate.queryForObject(selectUserSql, Integer.class, author);
 
-            if (first == 1) {
-                whereClause.append("AND ");
+                if (first == 1) {
+                    whereClause.append("AND ");
+                } else {
+                    whereClause = new StringBuilder("WHERE ");
+                }
+                whereClause.append("q.userID = ").append(authorID).append(" ");
+                first = 1;
+            } catch (EmptyResultDataAccessException e) {
+                // Handle the case where no entry is found
+                // You can either log this situation, throw a custom exception, or set a flag indicating no result found
+                return new ArrayList<>();
             }
-            else {
-                whereClause = new StringBuilder("WHERE ");
-            }
-            whereClause.append("q.userID = ").append(authorID).append(" ");
-            first = 1;
-
         }
 
         if(first == 0) {

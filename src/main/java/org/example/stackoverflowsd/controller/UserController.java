@@ -209,12 +209,12 @@ public class UserController{
         }
     }
 
-    @PostMapping("/updateQuestion")
-    public ResponseEntity<String> updateQuestion(@RequestHeader("Authorization") String token, @RequestParam String author, @RequestParam Long id, @RequestParam(required = false) String title, @RequestParam(required = false) String text,
+    @GetMapping("/updateQuestion")
+    public ResponseEntity<String> updateQuestion(@RequestHeader("Authorization") String token, @RequestParam String author, @RequestParam Long questionID, @RequestParam(required = false) String title, @RequestParam(required = false) String text,
                                                  @RequestParam(required = false) String tags, @RequestParam(required = false) MultipartFile image) throws IOException {
         if(checkIfUserMatchesToken(token, author) == 1) {
 
-            if(userService.updateQuestion(author, id, title, text, tags, image) == 1) {
+            if(userService.updateQuestion(author, questionID, title, text, tags, image) == 1) {
                 return ResponseEntity.ok("Question updated successfully");
             }
             else {

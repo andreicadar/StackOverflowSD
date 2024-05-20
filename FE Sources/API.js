@@ -429,3 +429,26 @@ export const deleteUser = async (username, token) => {
         throw error;
     }
 }
+
+export const updateQuestion = async (author, token, questionID, title, text) => {
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Add Authorization header with token
+            }
+        };
+        const response = await axios.get(`${BASE_URL}/updateQuestion?author=${author}&questionID=${questionID}&title=${title}&text=${text}`, config);
+
+        if (response.status !== 200) {
+            throw new Error(`Failed to update question. Status: ${response.status}`);
+        }
+
+        return response.data;
+
+    }
+    catch (error) {
+        console.error('Error updating question:', error);
+        throw error;
+    }
+}

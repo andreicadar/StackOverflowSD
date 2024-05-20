@@ -6,7 +6,7 @@ import {
     getUserByUsername,
     postAnswerToQuestion,
     postQuestion,
-    searchQuestions, seeQuestionDetails
+    searchQuestions, seeQuestionDetails, updateQuestion
 } from "./API";
 import Question from "./Question";
 import Answer from "./Answer";
@@ -37,6 +37,8 @@ function Home({username, token}) {
     const [userToSearchFor, setUserToSearchFor] = useState('');
     const [searchQuestionButtonWasPressed, setSearchQuestionButtonWasPressed] = useState(false);
     const [seeQuestionDetailsBoolean, setSeeQuestionDetailsBoolean] = useState(false);
+    const [showEditQuestionForm, setShowEditQuestionForm] = useState(false);
+    const [questionToBeEdited, setQuestionToBeEdited] = useState(null);
     const navigate = useNavigate();
 
     const [questionFormData, setQuestionFormData] = useState({
@@ -79,6 +81,7 @@ function Home({username, token}) {
 
     const handleUsernameClick = () => {
         fetchUserInformation();
+        setShowEditQuestionForm(false);
         setSeeQuestionDetailsBoolean(false);
         setShowSearchQuestions(false);
         setShowQuestionForm(false);
@@ -95,6 +98,7 @@ function Home({username, token}) {
         try {
             const response = await getQuestionsOfUser(username, token);
             setSeeQuestionDetailsBoolean(false);
+            setShowEditQuestionForm(false);
             setShowSearchQuestions(false);
             setQuestions(response);
             setShowQuestionForm(false);
@@ -114,6 +118,7 @@ function Home({username, token}) {
             const response = await searchQuestions(username, titleToSearchFor, tagToSearchFor, userToSearchFor, token);
             setSeeQuestionDetailsBoolean(false);
             setSearchQuestionButtonWasPressed(true);
+            setShowEditQuestionForm(false);
             setShowSearchQuestions(true);
             setQuestions(response);
             setShowQuestionForm(false);
@@ -138,7 +143,7 @@ function Home({username, token}) {
             setSuccessMessage('Question posted successfully.');
             setTimeout(() => {
                 setSuccessMessage('');
-            }, 5000);
+            }, 3000);
             await fetchQuestions();
         } catch (error) {
             if (error.response && error.response.data && error.response.data.error) {
@@ -184,6 +189,7 @@ function Home({username, token}) {
             setShowQuestions(false);
             setShowAnswersForm(false);
             setShowQuestionForm(false);
+            setShowEditQuestionForm(false);
             setShowUserInfo(false);
 
         } catch (error) {
@@ -198,6 +204,7 @@ function Home({username, token}) {
         setShowUserInfo(false);
         setShowQuestionForm(false);
         setShowAnswers(true);
+        setShowEditQuestionForm(false);
         setErrorMessage('');
         await fetchAnswers();
     };
@@ -230,7 +237,7 @@ function Home({username, token}) {
             setSuccessMessage('Answer deleted successfully.');
             setTimeout(() => {
                 setSuccessMessage('');
-            }, 5000);
+            }, 3000);
             if(seeQuestionDetailsBoolean){
                 await handleSeeQuestionDetailsButton(questionIDToAnswer);
             }
@@ -245,7 +252,24 @@ function Home({username, token}) {
     }
 
     async function handleQuestionEdit(id) {
-
+            const question = questions.find(q => q.id === id);
+            setSeeQuestionDetailsBoolean(false);
+            setShowSearchQuestions(false);
+            setShowQuestionForm(false);
+            setShowAnswers(false);
+            setShowEditQuestionForm(true);
+            setShowUserInfo(false);
+            setShowQuestions(false);
+            setShowAnswersForm(false);
+            setErrorMessage('');
+            setShowEditQuestionForm(true);
+            // setQuestionToBeEditedText(question.text);
+            // setQuestionToBeEditedTitle(question.title);
+            // setQuestionToBeEditedImage(question.pictureBase64);
+            // setQuestionToBeEditedTags(question.tags.split(', ').map(tag => tag.trim()));
+            // setQuestionToBeEditedScore(question.score);
+            question.tags = question.tags.split(', ').map(tag => tag.trim());
+            setQuestionToBeEdited(question);
     }
 
     async function handleQuestionDelete(id) {
@@ -254,11 +278,15 @@ function Home({username, token}) {
             setSuccessMessage('Question deleted successfully.');
             setTimeout(() => {
                 setSuccessMessage('');
-            }, 5000);
+            }, 3000);
             if (seeQuestionDetailsBoolean) {
-                fetchSearchedQuestions();
+                await fetchSearchedQuestions();
             } else if (showQuestions) {
                 await fetchQuestions();
+            }
+            else if(searchQuestionButtonWasPressed)
+            {
+                await fetchSearchedQuestions();
             }
         } catch (error) {
             setErrorMessage('Error question answer. Please try again later.');
@@ -275,7 +303,7 @@ function Home({username, token}) {
             setSuccessMessage('Answer posted successfully.');
             setTimeout(() => {
                 setSuccessMessage('');
-            }, 5000);
+            }, 3000);
             await handleSeeQuestionDetailsButton(id);
 
         } catch (error) {
@@ -292,6 +320,7 @@ function Home({username, token}) {
         setQuestionIDToAnswer(id);
         setSeeQuestionDetailsBoolean(false);
         setShowSearchQuestions(false);
+        setShowEditQuestionForm(false);
         setShowQuestionForm(false);
         setShowAnswers(false);
         setShowUserInfo(false);
@@ -304,6 +333,7 @@ function Home({username, token}) {
         setSeeQuestionDetailsBoolean(false);
         setShowQuestionForm(true);
         setShowAnswers(false);
+        setShowEditQuestionForm(false);
         setShowUserInfo(false);
         setShowQuestions(false);
         setShowAnswersForm(false);
@@ -316,6 +346,7 @@ function Home({username, token}) {
         setShowSearchQuestions(true);
         setShowQuestionForm(false);
         setShowAnswers(false);
+        setShowEditQuestionForm(false);
         setShowUserInfo(false);
         setShowQuestions(false);
         setShowAnswersForm(false);
@@ -323,12 +354,12 @@ function Home({username, token}) {
     }
 
     async function handleSeeQuestionDetailsButton(id) {
-        console.log("aaaaaaaaaaaaaaaaaaaaaaa");
         setQuestionIDToAnswer(id);
         setSeeQuestionDetailsBoolean(true);
         setShowSearchQuestions(false);
         setShowQuestionForm(false);
         setShowAnswers(false);
+        setShowEditQuestionForm(false);
         setShowUserInfo(false);
         setShowQuestions(false);
         setShowAnswersForm(false);
@@ -342,6 +373,27 @@ function Home({username, token}) {
         } catch (error) {
             setErrorMessage('Error fetching question details. Please try again later.');
         }
+    }
+
+    async function handleQuestionEditButton(event) {
+        event.preventDefault();
+        try {
+            const response = await updateQuestion(username, token, questionToBeEdited.id, questionToBeEdited.title, questionToBeEdited.text, questionToBeEdited.tags.join(', '));
+            console.log(response)
+            setSuccessMessage('Question updated successfully.');
+            setTimeout(() => {
+                setSuccessMessage('');
+            }, 3000)
+            await handleSeeQuestionDetailsButton(questionToBeEdited.id);
+        }
+        catch (error) {
+            setErrorMessage('Error updating question. Please try again later.');
+            setTimeout(() => {
+                setErrorMessage('');
+            }, 3000);
+        }
+
+
     }
 
     return (
@@ -559,7 +611,7 @@ function Home({username, token}) {
                     <div>
                         <h1 style={styles.title}>My Answers</h1>
                         {answers.map(answer => (
-                            <Answer username={username} token={token} key={answer.id} onDelete={() => handleAnswerDelete(answer.id)}
+                            <Answer username={username} token={token} key={answer.id} comesFromQuestionDetails={false} onDelete={() => handleAnswerDelete(answer.id)}
                                     onEdit={() => handleAnswerDelete(answer.id)} {...answer} />
                         ))}
                     </div>
@@ -583,6 +635,7 @@ function Home({username, token}) {
                             <h2 style={styles.subtitle}>Answers</h2>
                             {answers.map(answer => (
                                 <Answer
+                                    comesFromQuestionDetails={true}
                                     username={username}
                                     key={answer.id}
                                     onDelete={() => handleAnswerDelete(answer.id)}
@@ -597,6 +650,34 @@ function Home({username, token}) {
                     )}
                 </div>
             )}
+
+                {showEditQuestionForm && (
+                    <div style={styles.formContainer}>
+                        <h1 style={styles.title}>Edit Question</h1>
+                        <form onSubmit={handleQuestionEditButton}>
+                            <label style={styles.formLabel}>Title:</label>
+                            <input style={styles.formInput} type="text" value={questionToBeEdited.title}
+                                   onChange={(e) => {setQuestionToBeEdited({...questionToBeEdited, title: e.target.value});}}/><br/>
+                            <label style={styles.formLabel}>Text:</label>
+                            <textarea style={styles.formTextarea} value={questionToBeEdited.text}
+                                      onChange={(e) => {setQuestionToBeEdited({...questionToBeEdited, text: e.target.value});}}></textarea><br/>
+                            {questionToBeEdited.image ? (
+                                <img src={`data:image/jpeg;base64,${questionToBeEdited.image}`} alt="Question related"
+                                     style={styles.image}/>
+                            ) : (
+                                <div style={styles.imagePlaceholder}>Picture Placeholder</div>
+                            )}
+                            <div style={styles.questionTags}>
+                                {questionToBeEdited.tags.map((tag, index) => (
+                                    <div key={index} style={styles.questionTag}>{tag}</div>
+                                ))}
+                            </div>
+                            <div style={styles.questionScore}>Score: {questionToBeEdited.score}</div>
+                            <button style={styles.editQuestionButton} type="submit">Edit question</button>
+                        </form>
+                    </div>
+                )
+                }
 
 
             </div>
@@ -669,7 +750,8 @@ const styles = {
         padding: '10px',
         borderRadius: '5px',
         border: '1px solid #ccc',
-        marginBottom: '10px'
+        marginBottom: '10px',
+        fontSize: '16px'
     },
     formTextarea: {
         width: '100%',
@@ -678,7 +760,8 @@ const styles = {
         border: '1px solid #ccc',
         marginBottom: '10px',
         resize: 'none',
-        minHeight: '100px'
+        minHeight: '100px',
+        fontSize: '16px'
     },
     formButton: {
         backgroundColor: '#007bff',
@@ -857,6 +940,43 @@ const styles = {
         color: '#444',
         marginBottom: '10px',
     },
+    imageStyle: {
+        maxHeight: '450px',
+        width: 'auto',
+        display: 'block',
+        marginBottom: '10px',
+        marginTop: '10px',
+        borderRadius: '8px',
+    },
+    questionTags: {
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '10px',
+        marginBottom: '20px',
+        marginTop: '20px',
+    },
+    questionTag: {
+        background: '#e1ecf4',
+        borderRadius: '20px',
+        padding: '6px 18px',
+        fontSize: '24px',
+        color: '#0074d9',
+    },
+    questionScore: {
+        fontWeight: 'bold',
+        color: '#108ee9',
+        fontSize: '22px',
+        marginBottom: '20px',
+    },
+    editQuestionButton: {
+        backgroundColor: '#007bff',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '5px',
+        padding: '10px 20px',
+        cursor: 'pointer',
+        fontSize: '20px'
+    }
 
 };
 

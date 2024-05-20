@@ -131,7 +131,7 @@ function Question({username, token, id, author, title, text, creationTime, tags,
             cursor: 'pointer',
             fontSize: '20px',
             lineHeight: '1',
-            display: (author === username && comesFromQuestionDetails === true) ? 'block' : 'none',
+            display: (author === username) ? 'block' : 'none',
         },
         deleteButton: {
             position: 'absolute',

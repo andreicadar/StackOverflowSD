@@ -33,6 +33,8 @@ function Home({username, token}) {
     const [questionIDToAnswer, setQuestionIDToAnswer] = useState(null);
     const [showSearchQuestions, setShowSearchQuestions] = useState(false);
     const [titleToSearchFor, setTitleToSearchFor] = useState('');
+    const [tagToSearchFor, setTagToSearchFor] = useState('');
+    const [userToSearchFor, setUserToSearchFor] = useState('');
     const [searchQuestionButtonWasPressed, setSearchQuestionButtonWasPressed] = useState(false);
     const [seeQuestionDetailsBoolean, setSeeQuestionDetailsBoolean] = useState(false);
     const navigate = useNavigate();
@@ -109,7 +111,7 @@ function Home({username, token}) {
 
     const fetchSearchedQuestions = async () => {
         try {
-            const response = await searchQuestions(username, titleToSearchFor, token);
+            const response = await searchQuestions(username, titleToSearchFor, tagToSearchFor, userToSearchFor, token);
             setSeeQuestionDetailsBoolean(false);
             setSearchQuestionButtonWasPressed(true);
             setShowSearchQuestions(true);
@@ -404,13 +406,42 @@ function Home({username, token}) {
                     <div style={styles.searchContainer}>
                         <h2 style={styles.title}>Search Questions</h2>
                         <div style={styles.searchInputContainer}>
-                            <input style={styles.searchInput} type="text" placeholder="Title to search for"
-                                   value={titleToSearchFor} onChange={(e) => {
-                                setTitleToSearchFor(e.target.value);
-                                setSearchQuestionButtonWasPressed(false)
-                            }}/>
-                            <br/>
-                            <button style={styles.searchButton} onClick={fetchSearchedQuestions}>Search</button>
+                            <div style={styles.searchRow}>
+                                <label style={styles.searchLabel}>Title:</label>
+                                <input
+                                    style={styles.searchInput}
+                                    type="text"
+                                    placeholder="Title to search for"
+                                    value={titleToSearchFor}
+                                    onChange={(e) => setTitleToSearchFor(e.target.value)}
+                                />
+                            </div>
+                            <div style={styles.searchRow}>
+                                <label style={styles.searchLabel}> Tag:  </label>
+                                <input
+                                    style={styles.searchInput}
+                                    type="text"
+                                    placeholder="Tag to search for"
+                                    value={tagToSearchFor}
+                                    onChange={(e) => setTagToSearchFor(e.target.value)}
+                                />
+                            </div>
+                            <div style={styles.searchRow}>
+                                <label style={styles.searchLabel}>User:</label>
+                                <input
+                                    style={styles.searchInput}
+                                    type="text"
+                                    placeholder="User to search for"
+                                    value={userToSearchFor}
+                                    onChange={(e) => setUserToSearchFor(e.target.value)}
+                                />
+                            </div>
+                            <button
+                                style={styles.searchButton}
+                                onClick={fetchSearchedQuestions}
+                            >
+                                Search questions
+                            </button>
                         </div>
                         <div style={styles.questionList}>
                             {questions.length > 0 ? (
@@ -429,8 +460,7 @@ function Home({username, token}) {
                                 ))
                             ) : (
                                 searchQuestionButtonWasPressed && (
-                                    <p style={styles.noQuestionsText}>No questions found. Please try a different
-                                        search.</p>
+                                    <p style={styles.noQuestionsText}>No questions found. Please try a different search.</p>
                                 )
                             )}
                         </div>
@@ -755,19 +785,33 @@ const styles = {
         borderRadius: '8px',
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
         marginBottom: '20px',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 
     searchInputContainer: {
-        marginBottom: '10px',
+        marginBottom: '20px',
+        display: 'flex',
+        flexDirection: 'column',
         textAlign: 'center', // Center-align the input within its container
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+
+    searchRow: {
+        display: 'flex',
+        alignItems: 'center', // Center vertically
+        marginBottom: '20px',
+        width: '25%',
     },
     searchInput: {
-        width: '20%', // Make the search bar shorter
+        flex: 1,
         padding: '10px',
         borderRadius: '5px',
         border: '1px solid #ccc',
-        fontSize: '16px',
-        display: 'inline-block', // Keep it inline with the button
+        marginRight: '10px',
+        width: '20%',
+        fontSize: '18px',
     },
     searchButton: {
         backgroundColor: '#007bff',
@@ -777,9 +821,12 @@ const styles = {
         padding: '10px 20px',
         cursor: 'pointer',
         fontSize: '20px',
-        display: 'inline-block', // Align with the input
         marginTop: '10px',
-        marginLeft: '10px', // Adjust the margin to move it more to the left
+    },
+    searchLabel: {
+        marginRight: '10px', // Add some space between the label and input
+        fontSize: '22px',
+        fontWeight: 'bold',
     },
     questionList: {
         marginTop: '20px',

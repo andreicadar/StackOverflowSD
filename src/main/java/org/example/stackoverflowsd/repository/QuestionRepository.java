@@ -328,7 +328,14 @@ public class QuestionRepository implements QuestionInterface {
             String[] tagsArray = tags.split(",");
             questions.removeIf(question -> {
                 for (String tag : tagsArray) {
-                    if (!question.getTags().contains(tag)) {
+                    if(question.getTags() != null)
+                    {
+                        if (!question.getTags().contains(tag)) {
+                            return true;
+                        }
+                    }
+                    else
+                    {
                         return true;
                     }
                 }

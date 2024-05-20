@@ -17,6 +17,13 @@ public class EmailService {
         message.setTo(to);
         message.setSubject("Ai fost banat vere");
         message.setText("Ceva prostii ai facut tu pe acolo");
-        emailSender.send(message);
+        try
+        {
+            emailSender.send(message);
+        }
+        catch (Exception e)
+        {
+            System.out.println("Error in EmailService: " + e.getMessage());
+        }
     }
 }

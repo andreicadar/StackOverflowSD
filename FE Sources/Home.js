@@ -1,12 +1,13 @@
 import React, {useEffect, useState} from 'react';
 import {
+    banUser,
     deleteAnswer, deleteQuestion, deleteUser,
     getAnswersOfUser,
     getQuestionsOfUser,
     getUserByUsername,
     postAnswerToQuestion,
     postQuestion,
-    searchQuestions, seeQuestionDetails, updateQuestion
+    searchQuestions, seeQuestionDetails, updateAnswer, updateQuestion
 } from "./API";
 import Question from "./Question";
 import Answer from "./Answer";
@@ -39,6 +40,9 @@ function Home({username, token}) {
     const [seeQuestionDetailsBoolean, setSeeQuestionDetailsBoolean] = useState(false);
     const [showEditQuestionForm, setShowEditQuestionForm] = useState(false);
     const [questionToBeEdited, setQuestionToBeEdited] = useState(null);
+    const [showEditAnswerForm, setShowEditAnswerForm] = useState(false);
+    const [answerToBeEdited, setAnswerToBeEdited] = useState(null);
+    const [userToBan, setUserToBan] = useState('');
     const navigate = useNavigate();
 
     const [questionFormData, setQuestionFormData] = useState({
@@ -73,6 +77,7 @@ function Home({username, token}) {
     const fetchUserInformation = async () => {
         try {
             const userData = await getUserByUsername(username, token);
+            console.log(userData);
             setUserInfo(userData);
         } catch (error) {
             setErrorMessage('Error fetching user information. Please try again later.');
@@ -81,6 +86,7 @@ function Home({username, token}) {
 
     const handleUsernameClick = () => {
         fetchUserInformation();
+        setShowEditAnswerForm(false);
         setShowEditQuestionForm(false);
         setSeeQuestionDetailsBoolean(false);
         setShowSearchQuestions(false);
@@ -98,6 +104,7 @@ function Home({username, token}) {
         try {
             const response = await getQuestionsOfUser(username, token);
             setSeeQuestionDetailsBoolean(false);
+            setShowEditAnswerForm(false);
             setShowEditQuestionForm(false);
             setShowSearchQuestions(false);
             setQuestions(response);
@@ -118,6 +125,7 @@ function Home({username, token}) {
             const response = await searchQuestions(username, titleToSearchFor, tagToSearchFor, userToSearchFor, token);
             setSeeQuestionDetailsBoolean(false);
             setSearchQuestionButtonWasPressed(true);
+            setShowEditAnswerForm(false);
             setShowEditQuestionForm(false);
             setShowSearchQuestions(true);
             setQuestions(response);
@@ -183,6 +191,7 @@ function Home({username, token}) {
 
             const userAnswers = await getAnswersOfUser(username, token);
             setSeeQuestionDetailsBoolean(false);
+            setShowEditAnswerForm(false);
             setShowSearchQuestions(false);
             setAnswers(userAnswers);
             setShowAnswers(true);
@@ -202,6 +211,7 @@ function Home({username, token}) {
         setShowSearchQuestions(false);
         setShowQuestionForm(false);
         setShowUserInfo(false);
+        setShowEditAnswerForm(false);
         setShowQuestionForm(false);
         setShowAnswers(true);
         setShowEditQuestionForm(false);
@@ -226,9 +236,6 @@ function Home({username, token}) {
         catch (error){
             setErrorMessage('Error deleting user. Please try again later.');
         }
-    }
-
-    function handleAnswerEdit(id) {
     }
 
     async function handleAnswerDelete(id) {
@@ -258,18 +265,30 @@ function Home({username, token}) {
             setShowQuestionForm(false);
             setShowAnswers(false);
             setShowEditQuestionForm(true);
+            setShowEditAnswerForm(false);
             setShowUserInfo(false);
             setShowQuestions(false);
             setShowAnswersForm(false);
             setErrorMessage('');
             setShowEditQuestionForm(true);
-            // setQuestionToBeEditedText(question.text);
-            // setQuestionToBeEditedTitle(question.title);
-            // setQuestionToBeEditedImage(question.pictureBase64);
-            // setQuestionToBeEditedTags(question.tags.split(', ').map(tag => tag.trim()));
-            // setQuestionToBeEditedScore(question.score);
+            console.log(question);
             question.tags = question.tags.split(', ').map(tag => tag.trim());
             setQuestionToBeEdited(question);
+    }
+    function handleAnswerEdit(id) {
+        const answer = answers.find(a => a.id === id);
+        setSeeQuestionDetailsBoolean(false);
+        setShowSearchQuestions(false);
+        setShowQuestionForm(false);
+        setShowAnswers(false);
+        setShowEditQuestionForm(false);
+        setShowEditAnswerForm(true);
+        setShowUserInfo(false);
+        setShowQuestions(false);
+        setShowAnswersForm(false);
+        setErrorMessage('');
+        console.log(answer);
+        setAnswerToBeEdited(answer);
     }
 
     async function handleQuestionDelete(id) {
@@ -323,6 +342,7 @@ function Home({username, token}) {
         setShowEditQuestionForm(false);
         setShowQuestionForm(false);
         setShowAnswers(false);
+        setShowEditAnswerForm(false);
         setShowUserInfo(false);
         setShowQuestions(false)
         setShowAnswersForm(true);
@@ -332,6 +352,7 @@ function Home({username, token}) {
         setShowSearchQuestions(false);
         setSeeQuestionDetailsBoolean(false);
         setShowQuestionForm(true);
+        setShowEditAnswerForm(false);
         setShowAnswers(false);
         setShowEditQuestionForm(false);
         setShowUserInfo(false);
@@ -346,6 +367,7 @@ function Home({username, token}) {
         setShowSearchQuestions(true);
         setShowQuestionForm(false);
         setShowAnswers(false);
+        setShowEditAnswerForm(false);
         setShowEditQuestionForm(false);
         setShowUserInfo(false);
         setShowQuestions(false);
@@ -360,6 +382,7 @@ function Home({username, token}) {
         setShowQuestionForm(false);
         setShowAnswers(false);
         setShowEditQuestionForm(false);
+        setShowEditAnswerForm(false);
         setShowUserInfo(false);
         setShowQuestions(false);
         setShowAnswersForm(false);
@@ -392,8 +415,44 @@ function Home({username, token}) {
                 setErrorMessage('');
             }, 3000);
         }
+    }
 
+    async function handleAnswerEditButton(event) {
+        event.preventDefault();
+        try{
+            const response = await updateAnswer(username, token, answerToBeEdited.id, answerToBeEdited.text);
+            console.log(response);
+            setSuccessMessage('Answer updated successfully.');
+            setTimeout(() => {
+                setSuccessMessage('');
+            }, 3000);
+            await handleSeeQuestionDetailsButton(questionIDToAnswer);
+        }
+        catch (error) {
+            setErrorMessage('Error updating answer. Please try again later.');
+            setTimeout(() => {
+                setErrorMessage('');
+            }, 3000);
+        }
+    }
 
+    async function banUserButton(event)
+    {
+       event.preventDefault();
+        try {
+            const response = await banUser(username, token, userToBan);
+            console.log(response);
+            setSuccessMessage('User banned successfully.');
+            setTimeout(() => {
+                setSuccessMessage('');
+            }, 3000);
+        }
+        catch (error) {
+            setErrorMessage('Error banning user. Please try again later.');
+            setTimeout(() => {
+                setErrorMessage('');
+            }, 3000);
+        }
     }
 
     return (
@@ -448,8 +507,28 @@ function Home({username, token}) {
                             <button style={styles.userInfoEditButton} onClick={() => handleUserEdit()}>✏️</button>
 
                             <button style={styles.deleteButtonStyle} onClick={() => handleUserDelete()}>DELETE</button>
-
                         </div>
+                        <br></br>
+                        {userInfo.role === 'ROLE_MODERATOR' && (
+                            <div style={userInfoStyles.userBanContainer}>
+                                <div style={userInfoStyles.userToBanRow}>
+                                    <label style={{marginRight: '15px',fontSize: '24px', fontWeight: 'bold'}}>User to ban:</label>
+                                    <input
+                                        style={userInfoStyles.userToBanInput}
+                                        type="text"
+                                        placeholder="Username"
+                                        value={userToBan}
+                                        onChange={(e) => setUserToBan(e.target.value)}
+                                    />
+                                </div>
+                                <button
+                                    style={userInfoStyles.banUserButton}
+                                    onClick={banUserButton}
+                                >
+                                    BAN USER
+                                </button>
+                            </div>)
+                        }
 
                     </div>
                 )}
@@ -612,7 +691,7 @@ function Home({username, token}) {
                         <h1 style={styles.title}>My Answers</h1>
                         {answers.map(answer => (
                             <Answer username={username} token={token} key={answer.id} comesFromQuestionDetails={false} onDelete={() => handleAnswerDelete(answer.id)}
-                                    onEdit={() => handleAnswerDelete(answer.id)} {...answer} />
+                                    onEdit={() => handleAnswerEdit(answer.id)} {...answer} />
                         ))}
                     </div>
                 )}
@@ -661,8 +740,8 @@ function Home({username, token}) {
                             <label style={styles.formLabel}>Text:</label>
                             <textarea style={styles.formTextarea} value={questionToBeEdited.text}
                                       onChange={(e) => {setQuestionToBeEdited({...questionToBeEdited, text: e.target.value});}}></textarea><br/>
-                            {questionToBeEdited.image ? (
-                                <img src={`data:image/jpeg;base64,${questionToBeEdited.image}`} alt="Question related"
+                            {questionToBeEdited.pictureBase64 ? (
+                                <img src={`data:image/jpeg;base64,${questionToBeEdited.pictureBase64}`} alt="Question related"
                                      style={styles.image}/>
                             ) : (
                                 <div style={styles.imagePlaceholder}>Picture Placeholder</div>
@@ -678,6 +757,28 @@ function Home({username, token}) {
                     </div>
                 )
                 }
+
+                {showEditAnswerForm && (
+                    <div style={styles.formContainer}>
+                        <h1 style={styles.title}>Edit Answer</h1>
+                        <form onSubmit={handleAnswerEditButton}>
+                            <label style={styles.formLabel}>Text:</label>
+                            <textarea style={styles.formTextarea} value={answerToBeEdited.text}
+                                        onChange={(e) => {setAnswerToBeEdited({...answerToBeEdited, text: e.target.value});}}></textarea><br/>
+                            {answerToBeEdited.pictureBase64 ? (
+                                <img src={`data:image/jpeg;base64,${answerToBeEdited.pictureBase64}`} alt="Answer related"
+                                        style={styles.image}/>
+                            ) : (
+                                <div style={styles.imagePlaceholder}>Picture Placeholder</div>
+                            )}
+                            <div style={styles.questionScore}>Score: {answerToBeEdited.score}</div>
+                            <button style={styles.editQuestionButton} type="submit">Edit answer</button>
+                        </form>
+                    </div>
+                )
+                }
+
+
 
 
             </div>
@@ -880,7 +981,6 @@ const styles = {
         alignItems: 'center',
         justifyContent: 'center',
     },
-
     searchRow: {
         display: 'flex',
         alignItems: 'center', // Center vertically
@@ -1007,4 +1107,39 @@ const userInfoStyles = {
         border: '1px solid #ccc',
         marginBottom: '10px',
     },
+    userToBanInput: {
+        flex: 1,
+        padding: '10px',
+        borderRadius: '5px',
+        border: '1px solid #ccc',
+        marginRight: '10px',
+        width: '5%',
+        fontSize: '20px',
+    },
+    userToBanRow: {
+        display: 'flex',
+        alignItems: 'center', // Center vertically
+        marginBottom: '20px',
+        width: '15%',
+    },
+    userBanContainer: {
+        marginBottom: '20px',
+        marginTop: '60px',
+        display: 'flex',
+        flexDirection: 'column',
+        textAlign: 'center', // Center-align the input within its container
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    banUserButton: {
+        backgroundColor: 'red',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '5px',
+        padding: '10px 20px',
+        cursor: 'pointer',
+        fontSize: '20px',
+        fontWeight: 'bold',
+        marginTop: '10px',
+    }
 };

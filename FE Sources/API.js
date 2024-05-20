@@ -452,3 +452,48 @@ export const updateQuestion = async (author, token, questionID, title, text) => 
         throw error;
     }
 }
+
+export const updateAnswer = async (username, token, answerID, text) => {
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Add Authorization header with token
+            }
+        };
+        const response = await axios.get(`${BASE_URL}/updateAnswer?username=${username}&answerID=${answerID}&text=${text}`, config);
+
+        if (response.status !== 200) {
+            throw new Error(`Failed to update answer. Status: ${response.status}`);
+        }
+
+        return response.data;
+
+    }
+    catch (error) {
+        console.error('Error updating answer:', error);
+        throw error;
+    }
+}
+
+export const banUser = async (username, token, userToBan) => {
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Add Authorization header with token
+            }
+        };
+        const response = await axios.get(`${BASE_URL}/banUser?username=${username}&userToBan=${userToBan}`, config);
+
+        if (response.status !== 200) {
+            throw new Error(`Failed to ban user. Status: ${response.status}`);
+        }
+
+        return response.data;
+    }
+    catch (error) {
+        console.error('Error banning user:', error);
+        throw error;
+    }
+}

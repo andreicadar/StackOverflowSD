@@ -434,7 +434,13 @@ public class UserController{
             int result = userService.banUser(username, userToBan);
             if(result == 1) {
                 User user = userService.getUserByUsername(userToBan);
-                emailService.sendSimpleMessage(user.getEmail());
+                try
+                {
+                    emailService.sendSimpleMessage(user.getEmail());
+                }
+                catch (Exception e) {
+                    return ResponseEntity.badRequest().body("Cannot send email");
+                }
                 return ResponseEntity.ok("User banned successfully");
             }
             else if(result == 2){

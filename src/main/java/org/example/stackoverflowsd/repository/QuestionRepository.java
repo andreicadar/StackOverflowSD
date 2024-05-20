@@ -214,7 +214,7 @@ public class QuestionRepository implements QuestionInterface {
             {
                 Path filePath = Paths.get(uploadDir, "Q" + question.getId() + "U" + authorFromID + image.getOriginalFilename().substring(image.getOriginalFilename().length() - 4));
                 Files.write(filePath, image.getBytes());
-    
+
                 final String updatePicturePathSql = "UPDATE question SET picturePath = ? WHERE id = ?";
                 jdbcTemplate.update(updatePicturePathSql, filePath.toString(), question.getId());
             }

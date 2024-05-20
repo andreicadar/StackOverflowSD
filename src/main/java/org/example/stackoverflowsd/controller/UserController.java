@@ -412,7 +412,7 @@ public class UserController{
         }
     }
 
-    @PostMapping("/updateAnswer")
+    @GetMapping("/updateAnswer")
     public ResponseEntity<String> updateAnswer(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam Long answerID, @RequestParam(required = false) String text,
                                                @RequestParam(required = false) MultipartFile image) throws IOException {
         if(checkIfUserMatchesToken(token, username) == 1) {
@@ -428,7 +428,7 @@ public class UserController{
         }
     }
 
-    @PostMapping("/banUser")
+    @GetMapping("/banUser")
     public ResponseEntity<String> banUser(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam String userToBan) {
         if(checkIfUserMatchesToken(token, username) == 1) {
             int result = userService.banUser(username, userToBan);

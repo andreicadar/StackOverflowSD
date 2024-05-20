@@ -25,6 +25,9 @@ public class ConfigMail {
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.starttls.required", "true");
         props.put("mail.debug", "true");
+        props.put("mail.properties.mail.smtp.connectiontimeout", "5000");
+        props.put("mail.properties.mail.smtp.timeout", "5000");
+        props.put("mail.properties.mail.smtp.writetimeout", "5000");
 
         return mailSender;
     }

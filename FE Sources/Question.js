@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {downvoteQuestion, getQuestionByID, seeQuestionDetails, upvoteQuestion} from "./API";
 
-function Question({username, token, id, author, title, text, creationTime, tags, score, onDelete, onEdit, pictureBase64, onPostAnswer, onSeeQuestionDetails, comesFromQuestionDetails }) {
+function Question({username, userRole, token, id, author, title, text, creationTime, tags, score, onDelete, onEdit, pictureBase64, onPostAnswer, onSeeQuestionDetails, comesFromQuestionDetails }) {
     const [isClicked, setIsClicked] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [isHoveredAnotherButton, setIsHoveredAnotherButton] = useState(false);
@@ -67,6 +67,7 @@ function Question({username, token, id, author, title, text, creationTime, tags,
             lineHeight: '1.6',
             color: '#444',
             marginBottom: '10px',
+            fontSize: '18px',
         },
         tags: {
             display: 'flex',
@@ -108,7 +109,7 @@ function Question({username, token, id, author, title, text, creationTime, tags,
         answerButton: {
             position: 'absolute',
             bottom: '10px',
-            right: author === username ? '220px' : '10px',
+            right: author === username ? '220px' : (userRole === "ROLE_MODERATOR" ? '130px' : '10px'),
             backgroundColor: '#1170da',
             color: 'white',
             border: 'none',
@@ -145,7 +146,7 @@ function Question({username, token, id, author, title, text, creationTime, tags,
             cursor: 'pointer',
             fontSize: '20px',
             lineHeight: '1',
-            display: author === username ? 'block' : 'none',
+            display: author === username || userRole === "ROLE_MODERATOR" ? 'block' : 'none',
         },
         voteButtonsContainer: {
             position: 'absolute',
@@ -164,7 +165,7 @@ function Question({username, token, id, author, title, text, creationTime, tags,
             lineHeight: '30px',
             cursor: 'pointer',
             marginBottom: '25px', // Adjusted margin for spacing between buttons
-            display: 'block', // Ensure they appear one below the other
+            display: author !== username ? 'block' : 'none',
             fontSize: '24px',
         },
         downvoteButton: {
@@ -177,7 +178,7 @@ function Question({username, token, id, author, title, text, creationTime, tags,
             lineHeight: '30px',
             cursor: 'pointer',
             marginBottom: '25px', // Adjusted margin for spacing between buttons
-            display: 'block', // Ensure they appear one below the other
+            display: author !== username ? 'block' : 'none',
             fontSize: '24px',
         },
         errorMessage: {

@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {downvoteAnswer, getAnswerByID, upvoteAnswer} from "./API";
 
-function Answer({username, token, id, text, creationTime, pictureBase64, score, questionID, author, onDelete, onEdit, comesFromQuestionDetails }) {
+function Answer({username, userRole, token, id, text, creationTime, pictureBase64, score, questionID, author, onDelete, onEdit, comesFromQuestionDetails }) {
     const[answerVoteState, setAnswerVoteState] = useState(0);
     const[errorMessage, setErrorMessage] = useState('');
     const[answerScore, setAnswerScore] = useState(score);
@@ -21,7 +21,8 @@ function Answer({username, token, id, text, creationTime, pictureBase64, score, 
             lineHeight: '1.6',
             color: '#444',
             marginBottom: '10px',
-            marginLeft: '10px'
+            marginLeft: '10px',
+            fontSize: '18px',
         },
         author: {
             color: '#0074d9',
@@ -83,6 +84,7 @@ function Answer({username, token, id, text, creationTime, pictureBase64, score, 
             cursor: 'pointer',
             fontSize: '20px',
             lineHeight: '1',
+            display: author === username || userRole === "ROLE_MODERATOR" ? 'block' : 'none',
         },
         voteButtonsContainer: {
             position: 'absolute',
@@ -133,6 +135,7 @@ function Answer({username, token, id, text, creationTime, pictureBase64, score, 
 
     const handleUpvote = async () => {
         try {
+            console.log(token)
             await upvoteAnswer(username, id, token);
             setAnswerVoteState(1);
             const answer = await getAnswerByID(username, id, token);

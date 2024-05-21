@@ -201,10 +201,13 @@ public class AnswerRepository implements  AnswerInterface{
     public int voteAnswer(String username, int answerID, int upvote)
     {
         final String selectSql = "SELECT userID FROM answer WHERE id = ?";
-        int userID = jdbcTemplate.queryForObject(selectSql, Integer.class, answerID);
+        int authorID = jdbcTemplate.queryForObject(selectSql, Integer.class, answerID);
 
-        final String selectUserSql = "SELECT username FROM user WHERE id = ?";
-        String author = jdbcTemplate.queryForObject(selectUserSql, String.class, userID);
+        final String author = jdbcTemplate.queryForObject("SELECT username FROM user WHERE id = ?", String.class, authorID);
+
+
+        final String selectUserSql = "SELECT id FROM user WHERE username = ?";
+        int userID = jdbcTemplate.queryForObject(selectUserSql, Integer.class, username);
 
         if(author.equals(username)) {
             return 0;

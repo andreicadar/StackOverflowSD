@@ -356,10 +356,12 @@ public class QuestionRepository implements QuestionInterface {
 
     public int voteQuestion(String username, int questionID, int upvote) {
         final String selectSql = "SELECT userID FROM question WHERE id = ?";
-        int userID = jdbcTemplate.queryForObject(selectSql, Integer.class, questionID);
+        int authorID = jdbcTemplate.queryForObject(selectSql, Integer.class, questionID);
 
-        final String selectUserSql = "SELECT username FROM user WHERE id = ?";
-        String author = jdbcTemplate.queryForObject(selectUserSql, String.class, userID);
+        final String author = jdbcTemplate.queryForObject("SELECT username FROM user WHERE id = ?", String.class, authorID);
+
+        final String selectUserSql = "SELECT id FROM user WHERE username = ?";
+        int userID = jdbcTemplate.queryForObject(selectUserSql, Integer.class, username);
 
 
         if (author.equals(username)) {
@@ -371,6 +373,11 @@ public class QuestionRepository implements QuestionInterface {
         List<Integer> upvoteList = jdbcTemplate.query(selectSql2, new Object[]{questionID, userID}, (rs, rowNum) -> {
             return rs.getInt("upvote");
         });
+
+        System.out.println(userID);
+        System.out.println(questionID);
+        System.out.println(upvoteList.size());
+        System.out.println(upvote);
 
         if(upvoteList.size() > 0) {
             if(upvoteList.get(0) == upvote) {

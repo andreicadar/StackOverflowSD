@@ -43,6 +43,7 @@ function Home({username, token}) {
     const [showEditAnswerForm, setShowEditAnswerForm] = useState(false);
     const [answerToBeEdited, setAnswerToBeEdited] = useState(null);
     const [userToBan, setUserToBan] = useState('');
+    const [noQuestionsText, setNoQuestionsText] = useState('');
     const navigate = useNavigate();
 
     const [questionFormData, setQuestionFormData] = useState({
@@ -64,7 +65,10 @@ function Home({username, token}) {
             setRedirectToLogin(true);
         } else {
             // Fetch questions when username or token changes
-            fetchQuestions().then(r => console.log('Questions fetched')).catch(e => console.error('Error fetching questions:', e));
+            fetchQuestions().then(r => {console.log('Questions fetched')}).catch(e => console.error('Error fetching questions:', e));
+            fetchUserInformation().then(r => console.log('User information fetched')).catch(e => console.error('Error fetching user information:', e));
+
+
         }
     }, [username, token]);
 
@@ -78,6 +82,7 @@ function Home({username, token}) {
         try {
             const userData = await getUserByUsername(username, token);
             console.log(userData);
+
             setUserInfo(userData);
         } catch (error) {
             setErrorMessage('Error fetching user information. Please try again later.');
@@ -85,7 +90,7 @@ function Home({username, token}) {
     };
 
     const handleUsernameClick = () => {
-        fetchUserInformation();
+       // fetchUserInformation();
         setShowEditAnswerForm(false);
         setShowEditQuestionForm(false);
         setSeeQuestionDetailsBoolean(false);
@@ -108,6 +113,10 @@ function Home({username, token}) {
             setShowEditQuestionForm(false);
             setShowSearchQuestions(false);
             setQuestions(response);
+            if(response.length === 0)
+            {
+                setNoQuestionsText("No questions found. Please try a different search.");
+            }
             setShowQuestionForm(false);
             setShowUserInfo(false);
             setShowQuestions(true);
@@ -117,6 +126,7 @@ function Home({username, token}) {
 
         } catch (error) {
             setErrorMessage('Error fetching questions. Please try again later.')
+            setNoQuestionsText("No questions found. Please try a different search.");
         }
     };
 
@@ -271,7 +281,6 @@ function Home({username, token}) {
             setShowAnswersForm(false);
             setErrorMessage('');
             setShowEditQuestionForm(true);
-            console.log(question);
             question.tags = question.tags.split(', ').map(tag => tag.trim());
             setQuestionToBeEdited(question);
     }
@@ -287,7 +296,6 @@ function Home({username, token}) {
         setShowQuestions(false);
         setShowAnswersForm(false);
         setErrorMessage('');
-        console.log(answer);
         setAnswerToBeEdited(answer);
     }
 
@@ -402,7 +410,6 @@ function Home({username, token}) {
         event.preventDefault();
         try {
             const response = await updateQuestion(username, token, questionToBeEdited.id, questionToBeEdited.title, questionToBeEdited.text, questionToBeEdited.tags.join(', '));
-            console.log(response)
             setSuccessMessage('Question updated successfully.');
             setTimeout(() => {
                 setSuccessMessage('');
@@ -421,7 +428,6 @@ function Home({username, token}) {
         event.preventDefault();
         try{
             const response = await updateAnswer(username, token, answerToBeEdited.id, answerToBeEdited.text);
-            console.log(response);
             setSuccessMessage('Answer updated successfully.');
             setTimeout(() => {
                 setSuccessMessage('');
@@ -441,7 +447,6 @@ function Home({username, token}) {
        event.preventDefault();
         try {
             const response = await banUser(username, token, userToBan);
-            console.log(response);
             setSuccessMessage('User banned successfully.');
             setTimeout(() => {
                 setSuccessMessage('');
@@ -579,6 +584,7 @@ function Home({username, token}) {
                                 questions.map(question => (
                                     <Question
                                         username={username}
+                                        userRole={userInfo.role}
                                         key={question.id}
                                         onPostAnswer={handlePostAnAnswerButton}
                                         {...question}
@@ -591,7 +597,7 @@ function Home({username, token}) {
                                 ))
                             ) : (
                                 searchQuestionButtonWasPressed && (
-                                    <p style={styles.noQuestionsText}>No questions found. Please try a different search.</p>
+                                    <p style={styles.noQuestionsText}>{noQuestionsText}</p>
                                 )
                             )}
                         </div>
@@ -629,24 +635,31 @@ function Home({username, token}) {
                         </form>
                     </div>)}
 
-                {showQuestions && (
-                    <div>
-                        <h1 style={styles.title}>My Questions</h1>
-                        {questions.map(question => (
-                            <Question
-                                username={username}
-                                key={question.id}
-                                onPostAnswer={handlePostAnAnswerButton}
-                                {...question}
-                                onDelete={() => handleQuestionDelete(question.id)}
-                                onEdit={() => handleQuestionEdit(question.id)}
-                                onSeeQuestionDetails={() => handleSeeQuestionDetailsButton(question.id)}
-                                comesFromQuestionDetails={false}
-                                token={token}
-                            />
-                        ))}
-                    </div>
-                )}
+                    {showQuestions && (
+                        <div>
+                            <h1 style={styles.title}>My Questions</h1>
+                            {questions.length > 0 ? (
+                                questions.map(question => (
+                                    <Question
+                                        username={username}
+                                        userRole={userInfo.role}
+                                        key={question.id}
+                                        onPostAnswer={handlePostAnAnswerButton}
+                                        {...question}
+                                        onDelete={() => handleQuestionDelete(question.id)}
+                                        onEdit={() => handleQuestionEdit(question.id)}
+                                        onSeeQuestionDetails={() => handleSeeQuestionDetailsButton(question.id)}
+                                        comesFromQuestionDetails={false}
+                                        token={token}
+                                    />
+                                ))
+                            ) : (
+                                <p style={styles.noQuestionsText}>{noQuestionsText}</p>
+                            )}
+                        </div>
+                    )}
+
+
 
                 {showAnswersForm && (() => {
                     const selectedQuestion = questions.find(question => question.id === questionIDToAnswer);
@@ -655,6 +668,7 @@ function Home({username, token}) {
                             {selectedQuestion && (
                                 <Question
                                     username={username}
+                                    userRole={userInfo.role}
                                     key={selectedQuestion.id}
                                     {...selectedQuestion}
                                     onPostAnswer={handlePostAnAnswerButton}
@@ -690,7 +704,7 @@ function Home({username, token}) {
                     <div>
                         <h1 style={styles.title}>My Answers</h1>
                         {answers.map(answer => (
-                            <Answer username={username} token={token} key={answer.id} comesFromQuestionDetails={false} onDelete={() => handleAnswerDelete(answer.id)}
+                            <Answer username={username} token={token} key={answer.id} userRole={userInfo.role} comesFromQuestionDetails={false} onDelete={() => handleAnswerDelete(answer.id)}
                                     onEdit={() => handleAnswerEdit(answer.id)} {...answer} />
                         ))}
                     </div>
@@ -700,6 +714,7 @@ function Home({username, token}) {
                 <div style={styles.detailsContainer}>
                     <Question
                         username={username}
+                        userRole={userInfo.role}
                         key={questionToBeDetailed.id}
                         {...questionToBeDetailed}
                         onPostAnswer={handlePostAnAnswerButton}
@@ -714,8 +729,10 @@ function Home({username, token}) {
                             <h2 style={styles.subtitle}>Answers</h2>
                             {answers.map(answer => (
                                 <Answer
+                                    token={token}
                                     comesFromQuestionDetails={true}
                                     username={username}
+                                    userRole={userInfo.role}
                                     key={answer.id}
                                     onDelete={() => handleAnswerDelete(answer.id)}
                                     onEdit={() => handleAnswerEdit(answer.id)}
@@ -803,7 +820,7 @@ const styles = {
         background: '#f0f0f0',
         padding: '20px',
         boxSizing: 'border-box',
-        height: '100vh',
+        height: '25vh',
     },
     content: {
         flex: 1,
@@ -913,7 +930,7 @@ const styles = {
         color: '#721c24',
         borderRadius: '5px',
         padding: '10px',
-        fontSize: '18px',
+        fontSize: '22px',
         textAlign: 'center',
         width: '100%',
         marginBottom: '20px'
@@ -923,7 +940,7 @@ const styles = {
         color: '#155724',
         borderRadius: '5px',
         padding: '10px',
-        fontSize: '18px',
+        fontSize: '22px',
         textAlign: 'center',
         width: '100%',
         marginBottom: '20px'

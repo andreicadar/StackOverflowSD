@@ -219,6 +219,13 @@ public class AnswerRepository implements  AnswerInterface{
             return rs.getInt("upvote");
         });
 
+        System.out.println(authorID);
+        System.out.println(userID);
+        System.out.println(answerID);
+        System.out.println(upvoteList.size());
+        System.out.println(upvote);
+
+
         if(upvoteList.size() > 0) {
             if(upvoteList.get(0) == upvote) {
                 return 2;
@@ -235,17 +242,17 @@ public class AnswerRepository implements  AnswerInterface{
 
             if(upvote == 1){
                 scoreToAddToAuthor = 7.5f;
-                scoreToAddToUser = 3.0f;
+                scoreToAddToUser = 1.5f;
             }
             else {
                 scoreToAddToAuthor = -7.5f;
-                scoreToAddToUser = -3.0f;
+                scoreToAddToUser = -1.5f;
             }
             final String updateAuthorScoreSql = "UPDATE user SET score = score + ? WHERE id = ?";
-            jdbcTemplate.update(updateAuthorScoreSql, scoreToAddToAuthor, userID);
+            jdbcTemplate.update(updateAuthorScoreSql, scoreToAddToAuthor, authorID);
 
-            final String updateUserScoreSql = "UPDATE user SET score = score + ? WHERE username = ?";
-            jdbcTemplate.update(updateUserScoreSql, scoreToAddToUser, username);
+            final String updateUserScoreSql = "UPDATE user SET score = score + ? WHERE id = ?";
+            jdbcTemplate.update(updateUserScoreSql, scoreToAddToUser, userID);
         }
         else {
             final String insertSql = "INSERT INTO user_answer_vote (answerID, userID, upvote) VALUES (?,?,?)";
@@ -265,11 +272,11 @@ public class AnswerRepository implements  AnswerInterface{
                 scoreToAddToUser = -1.5f;
 
 
-                final String updateUserScoreSql = "UPDATE user SET score = score + ? WHERE username = ?";
-                jdbcTemplate.update(updateUserScoreSql, scoreToAddToUser, username);
+                final String updateUserScoreSql = "UPDATE user SET score = score + ? WHERE id = ?";
+                jdbcTemplate.update(updateUserScoreSql, scoreToAddToUser, userID);
             }
             final String updateAuthorScoreSql = "UPDATE user SET score = score + ? WHERE id = ?";
-            jdbcTemplate.update(updateAuthorScoreSql, scoreToAddToAuthor, userID);
+            jdbcTemplate.update(updateAuthorScoreSql, scoreToAddToAuthor, authorID);
 
 
         }

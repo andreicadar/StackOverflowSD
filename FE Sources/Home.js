@@ -90,7 +90,7 @@ function Home({username, token}) {
     };
 
     const handleUsernameClick = () => {
-       // fetchUserInformation();
+        fetchUserInformation();
         setShowEditAnswerForm(false);
         setShowEditQuestionForm(false);
         setSeeQuestionDetailsBoolean(false);

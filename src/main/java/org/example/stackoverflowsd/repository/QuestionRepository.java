@@ -398,7 +398,7 @@ public class QuestionRepository implements QuestionInterface {
                 scoreToAdd = -4.0f;
             }
             final String updateAuthorScoreSql = "UPDATE user SET score = score + ? WHERE id = ?";
-            jdbcTemplate.update(updateAuthorScoreSql, scoreToAdd, userID);
+            jdbcTemplate.update(updateAuthorScoreSql, scoreToAdd, authorID);
         }
         else {
             final String insertSql = "INSERT INTO user_question_vote (questionID, userID, upvote) VALUES (?,?,?)";
@@ -415,7 +415,7 @@ public class QuestionRepository implements QuestionInterface {
                 scoreToAdd = -1.5f;
             }
             final String updateAuthorScoreSql = "UPDATE user SET score = score + ? WHERE id = ?";
-            jdbcTemplate.update(updateAuthorScoreSql, scoreToAdd, userID);
+            jdbcTemplate.update(updateAuthorScoreSql, scoreToAdd, authorID);
         }
         return 1;
     }

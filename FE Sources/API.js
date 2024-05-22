@@ -497,3 +497,25 @@ export const banUser = async (username, token, userToBan) => {
         throw error;
     }
 }
+
+export const updateUser = async (username, token, newUsername, newEmail, newPassword) => {
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Add Authorization header with token
+            }
+        };
+
+        const response = await axios.get(`${BASE_URL}/updateUser?username=${username}&newUsername=${newUsername}&newEmail=${newEmail}&newPassword=${newPassword}`, config);
+
+        if (response.status !== 200) {
+            throw new Error(`Failed to update user. Status: ${response.status}`);
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error('Error updating user:', error);
+        throw error;
+    }
+}

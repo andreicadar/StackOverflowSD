@@ -72,7 +72,7 @@ public class UserController{
             return ResponseEntity.ok(userService.addUser(userInfo));
     }
 
-    @PostMapping("/updateUser")
+    @GetMapping("/updateUser")
     public ResponseEntity<String> updateUser(@RequestHeader("Authorization") String token, @RequestParam String username, @RequestParam(required = false) String newUsername, @RequestParam(required = false) String password, @RequestParam(required = false) String email) throws IOException {
         if(checkIfUserMatchesToken(token, username) == 1) {
             if(userService.updateUser(username, newUsername, password, email) == 1) {

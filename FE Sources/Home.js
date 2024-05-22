@@ -4,10 +4,10 @@ import {
     deleteAnswer, deleteQuestion, deleteUser,
     getAnswersOfUser,
     getQuestionsOfUser,
-    getUserByUsername,
+    getUserByUsername, login,
     postAnswerToQuestion,
     postQuestion,
-    searchQuestions, seeQuestionDetails, updateAnswer, updateQuestion
+    searchQuestions, seeQuestionDetails, updateAnswer, updateQuestion, updateUser
 } from "./API";
 import Question from "./Question";
 import Answer from "./Answer";
@@ -22,7 +22,7 @@ function Redirect(props) {
 
 Redirect.propTypes = {to: PropTypes.string};
 
-function Home({username, token}) {
+function Home({usernameProps, tokenProps}) {
     const [questions, setQuestions] = useState([]);
     const [questionToBeDetailed, setQuestionToBeDetailed] = useState(null);
     const [answers, setAnswers] = useState([]);
@@ -44,6 +44,12 @@ function Home({username, token}) {
     const [answerToBeEdited, setAnswerToBeEdited] = useState(null);
     const [userToBan, setUserToBan] = useState('');
     const [noQuestionsText, setNoQuestionsText] = useState('');
+    const [showUserEditForm, setShowUserEditForm] = useState(false);
+    const [userEditUsername, setUserEditUsername] = useState('');
+    const [userEditEmail, setUserEditEmail] = useState('');
+    const [userEditPassword, setUserEditPassword] = useState('');
+    const [username, setUsername] = useState(usernameProps);
+    const [token, setToken] = useState(tokenProps);
     const navigate = useNavigate();
 
     const [questionFormData, setQuestionFormData] = useState({
@@ -80,6 +86,7 @@ function Home({username, token}) {
 
     const fetchUserInformation = async () => {
         try {
+            console.log(username, token)
             const userData = await getUserByUsername(username, token);
             console.log(userData);
 
@@ -92,6 +99,7 @@ function Home({username, token}) {
     const handleUsernameClick = () => {
         fetchUserInformation();
         setShowEditAnswerForm(false);
+        setShowUserEditForm(false);
         setShowEditQuestionForm(false);
         setSeeQuestionDetailsBoolean(false);
         setShowSearchQuestions(false);
@@ -109,6 +117,7 @@ function Home({username, token}) {
         try {
             const response = await getQuestionsOfUser(username, token);
             setSeeQuestionDetailsBoolean(false);
+            setShowUserEditForm(false);
             setShowEditAnswerForm(false);
             setShowEditQuestionForm(false);
             setShowSearchQuestions(false);
@@ -134,6 +143,7 @@ function Home({username, token}) {
         try {
             const response = await searchQuestions(username, titleToSearchFor, tagToSearchFor, userToSearchFor, token);
             setSeeQuestionDetailsBoolean(false);
+            setShowUserEditForm(false);
             setSearchQuestionButtonWasPressed(true);
             setShowEditAnswerForm(false);
             setShowEditQuestionForm(false);
@@ -201,6 +211,7 @@ function Home({username, token}) {
 
             const userAnswers = await getAnswersOfUser(username, token);
             setSeeQuestionDetailsBoolean(false);
+            setShowUserEditForm(false);
             setShowEditAnswerForm(false);
             setShowSearchQuestions(false);
             setAnswers(userAnswers);
@@ -219,6 +230,7 @@ function Home({username, token}) {
     const handleSeeMyAnswers = async () => {
         setSeeQuestionDetailsBoolean(false);
         setShowSearchQuestions(false);
+        setShowUserEditForm(false);
         setShowQuestionForm(false);
         setShowUserInfo(false);
         setShowEditAnswerForm(false);
@@ -229,8 +241,63 @@ function Home({username, token}) {
         await fetchAnswers();
     };
 
-    function handleUserEdit() {
+    function handleUserEditMenuButton() {
+        setShowUserEditForm(true);
+        setShowSearchQuestions(false);
+        setShowQuestionForm(false);
+        setShowAnswers(false);
+        setShowEditQuestionForm(false);
+        setShowEditAnswerForm(false);
+        setShowUserInfo(false);
+        setShowQuestions(false);
+        setShowAnswersForm(false);
+        setErrorMessage('');
+        setUserEditUsername(userInfo.username);
+        setUserEditEmail(userInfo.email);
+    }
+    async function handleUserEdit(event)
+    {
+        event.preventDefault();
+        try{
+            const response = await updateUser(username, token, userEditUsername, userEditEmail, userEditPassword);
+            console.log(response)
+            setSuccessMessage('User updated successfully.');
+            setTimeout(() => {
+                setSuccessMessage('');
+            }, 3000);
+            setUsername(userEditUsername);
+            console.log("username: " + username)
+            console.log("userEditUsername: " + userEditUsername)
 
+            const userData = {
+                username: userEditUsername,
+                password: userEditPassword
+            };
+            console.log(userData)
+
+            const jsonData = JSON.stringify(userData);
+
+            try {
+                const response = await login(jsonData);
+                console.log(response);
+                setToken(response);
+            }
+            catch (error) {
+                console.error('Error logging in:', error.message);
+                setErrorMessage('Invalid credentials. Please try again.');
+                setTimeout(() => {
+                    setErrorMessage('');
+                }, 5000);
+            }
+            setUserEditPassword('');
+            //await handleUsernameClick();
+        }
+        catch (error) {
+            setErrorMessage('Error updating user. Please try again later.');
+            setTimeout(() => {
+                setErrorMessage('');
+            }, 3000);
+        }
     }
 
     async function handleUserDelete() {
@@ -271,6 +338,7 @@ function Home({username, token}) {
     async function handleQuestionEdit(id) {
             const question = questions.find(q => q.id === id);
             setSeeQuestionDetailsBoolean(false);
+            setShowUserEditForm(false);
             setShowSearchQuestions(false);
             setShowQuestionForm(false);
             setShowAnswers(false);
@@ -287,6 +355,7 @@ function Home({username, token}) {
     function handleAnswerEdit(id) {
         const answer = answers.find(a => a.id === id);
         setSeeQuestionDetailsBoolean(false);
+        setShowUserEditForm(false);
         setShowSearchQuestions(false);
         setShowQuestionForm(false);
         setShowAnswers(false);
@@ -347,6 +416,7 @@ function Home({username, token}) {
         setQuestionIDToAnswer(id);
         setSeeQuestionDetailsBoolean(false);
         setShowSearchQuestions(false);
+        setShowUserEditForm(false);
         setShowEditQuestionForm(false);
         setShowQuestionForm(false);
         setShowAnswers(false);
@@ -358,6 +428,7 @@ function Home({username, token}) {
 
     function handlePostAQuestionButton() {
         setShowSearchQuestions(false);
+        setShowUserEditForm(false);
         setSeeQuestionDetailsBoolean(false);
         setShowQuestionForm(true);
         setShowEditAnswerForm(false);
@@ -372,6 +443,7 @@ function Home({username, token}) {
         setTitleToSearchFor('')
         setSearchQuestionButtonWasPressed(false);
         setQuestions([]);
+        setShowUserEditForm(false);
         setShowSearchQuestions(true);
         setShowQuestionForm(false);
         setShowAnswers(false);
@@ -387,6 +459,7 @@ function Home({username, token}) {
         setQuestionIDToAnswer(id);
         setSeeQuestionDetailsBoolean(true);
         setShowSearchQuestions(false);
+        setShowUserEditForm(false);
         setShowQuestionForm(false);
         setShowAnswers(false);
         setShowEditQuestionForm(false);
@@ -509,7 +582,7 @@ function Home({username, token}) {
                             <input style={userInfoStyles.userInfoInput} type="text" value={userInfo.score} readOnly/>
                         </div>
                         <div style={{textAlign: 'center'}}> {}
-                            <button style={styles.userInfoEditButton} onClick={() => handleUserEdit()}>✏️</button>
+                            <button style={styles.userInfoEditButton} onClick={() => handleUserEditMenuButton()}>✏️</button>
 
                             <button style={styles.deleteButtonStyle} onClick={() => handleUserDelete()}>DELETE</button>
                         </div>
@@ -535,6 +608,45 @@ function Home({username, token}) {
                             </div>)
                         }
 
+                    </div>
+                )}
+
+                {showUserEditForm && userInfo && (
+                    <div style={{...styles.formContainer, ...userInfoStyles.userInfoContainer}}>
+                        <h2 style={userInfoStyles.userInfoTitle}>Edit User Information</h2>
+                        <form onSubmit={(e) => e.preventDefault()}>
+                            <div>
+                                <label style={userInfoStyles.userInfoLabel}>Username:</label>
+                                <input
+                                    style={userInfoStyles.userInfoInput}
+                                    type="text"
+                                    value={userEditUsername}
+                                    onChange={(e) => setUserEditUsername(e.target.value)}
+                                    required={true}
+                                />
+                            </div>
+                            <div>
+                                <label style={userInfoStyles.userInfoLabel}>Email:</label>
+                                <input
+                                    style={userInfoStyles.userInfoInput}
+                                    type="text"
+                                    value={userEditEmail}
+                                    onChange={(e) => setUserEditEmail(e.target.value)}
+                                    required={true}
+                                />
+                            </div>
+                            <div>
+                                <label style={userInfoStyles.userInfoLabel}>Password:</label>
+                                <input
+                                    style={userInfoStyles.userInfoInput}
+                                    type="text"
+                                    value={userEditPassword}
+                                    onChange={(e) => setUserEditPassword(e.target.value)}
+                                    required={true}
+                                />
+                            </div>
+                            <button style={styles.userInfoEditButton} onClick={(event) => handleUserEdit(event)}>EDIT</button>
+                        </form>
                     </div>
                 )}
 
@@ -611,6 +723,7 @@ function Home({username, token}) {
                         <form onSubmit={handlePostQuestion}>
                             <label style={styles.formLabel}>Title:</label>
                             <input style={styles.formInput} type="text" value={questionFormData.title}
+                                   required={true}
                                    onChange={(e) => setQuestionFormData({...questionFormData, title: e.target.value})}/><br/>
                             <label style={styles.formLabel}>Text:</label>
                             <textarea style={styles.formTextarea} value={questionFormData.text}
@@ -623,6 +736,7 @@ function Home({username, token}) {
                                 {questionFormData.tags.map((tag, index) => (
                                     <div key={index} style={styles.tag}>
                                         <input style={styles.formTagInput} type="text" value={tag}
+                                               required={true}
                                                onChange={(e) => handleTagChange(e, index)}/>
                                     </div>
                                 ))}
@@ -630,6 +744,7 @@ function Home({username, token}) {
                             </div>
                             <label style={styles.formLabel}>Image:</label>
                             <input style={styles.formInput} type="file" accept="image/*"
+                                   required={true}
                                    onChange={handleImageChangeQuestionForm}/><br/>
                             <button style={styles.formButton} type="submit">Post Question</button>
                         </form>
@@ -683,6 +798,7 @@ function Home({username, token}) {
                             <form onSubmit={(event) => handlePostAnswer(event, selectedQuestion.id)}>
                                 <label style={styles.formLabel}>Text:</label>
                                 <textarea
+                                    required={true}
                                     style={styles.formTextarea}
                                     value={answerFormData.text}
                                     onChange={(e) => setAnswerFormData({...answerFormData, text: e.target.value})}
@@ -693,6 +809,7 @@ function Home({username, token}) {
                                     type="file"
                                     accept="image/*"
                                     onChange={handleImageChangeAnswerForm}
+                                    required={true}
                                 /><br/>
                                 <button style={styles.formButton} type="submit">Post Answer</button>
                             </form>

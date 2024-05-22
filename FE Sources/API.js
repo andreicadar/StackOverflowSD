@@ -507,7 +507,7 @@ export const updateUser = async (username, token, newUsername, newEmail, newPass
             }
         };
 
-        const response = await axios.get(`${BASE_URL}/updateUser?username=${username}&newUsername=${newUsername}&newEmail=${newEmail}&newPassword=${newPassword}`, config);
+        const response = await axios.get(`${BASE_URL}/updateUser?username=${username}&newUsername=${newUsername}&email=${newEmail}&password=${newPassword}`, config);
 
         if (response.status !== 200) {
             throw new Error(`Failed to update user. Status: ${response.status}`);
